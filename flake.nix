@@ -17,8 +17,8 @@
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            pnpm
-            nodejs_22
+            pnpm_10
+            nodejs_24
             biome
             worker-build
           ];
@@ -46,7 +46,7 @@
             program = "${pkgs.writeShellScript "${cmd}" ''
               export NIX_LD=$(nix eval --raw nixpkgs#stdenv.cc.bintools.dynamicLinker)
               export NIX_LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath (with pkgs; [stdenv.cc.cc openssl zlib])}"
-              ${pkgs.pnpm}/bin/pnpm ${cmd}
+              ${pkgs.pnpm_10}/bin/pnpm ${cmd}
             ''}";
           };
         in {

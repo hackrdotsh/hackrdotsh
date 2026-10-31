@@ -14,7 +14,7 @@ Personal portfolio built with Next.js, React, Tailwind CSS, and GSAP.
 
 ## Getting Started
 
-Requires **Node.js 22** and **pnpm**.
+Requires **Node.js 24** and **pnpm**.
 
 ```bash
 pnpm install
@@ -29,7 +29,21 @@ Alternatively, enter the Nix dev shell:
 direnv allow
 ```
 
-This provides `pnpm`, `nodejs_22`, and `biome`.
+This provides `pnpm`, `nodejs_24`, and `biome`.
+
+## Cloudflare builds
+
+Set the build command to `pnpm build` and the deploy command to `pnpm deploy`.
+The build generates `dist/server/wrangler.json`, including the assets directory;
+deploying the source `wrangler.jsonc` directly skips this step. Cloudflare can
+select Node 24 from `.node-version`. Remove any older `NODE_VERSION` override.
+The build environment also needs the production `CONVEX_DEPLOY_KEY` and the
+app's public Convex environment variables.
+After changing the Convex project slug, replace any existing deploy key in
+Cloudflare's build variables with a newly generated production deploy key.
+
+Run `pnpm audit` to review dependency advisories. See `SECURITY.md` for the
+remaining Better Auth compatibility constraint.
 
 ## Scripts
 
