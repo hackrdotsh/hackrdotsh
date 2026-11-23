@@ -47,6 +47,14 @@ function result(value: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }] };
 }
 
+const jobFields = z.strictObject({
+  title: z.string(),
+  company: z.string(),
+  description: z.string(),
+  location: z.string().optional(),
+  postingPostedAt: z.number().optional(),
+});
+
 export const handle = httpAction(async (ctx, request) => {
   const token = process.env.PORTFOLIO_MCP_TOKEN;
   if (!token || request.headers.get("authorization") !== `Bearer ${token}`) {
@@ -122,14 +130,9 @@ export const handle = httpAction(async (ctx, request) => {
     {
       description:
         "Update the supplied fields on an existing job posting. Dates are Unix milliseconds.",
-      inputSchema: z.strictObject({
-        id: recordId<"jobPostings">(),
-        title: z.string().optional(),
-        company: z.string().optional(),
-        description: z.string().optional(),
-        location: z.string().optional(),
-        postingPostedAt: z.number().optional(),
-      }),
+      inputSchema: jobFields
+        .partial()
+        .extend({ id: recordId<"jobPostings">() }),
     },
     async (args) => {
       if (Object.keys(args).length === 1)
@@ -138,6 +141,82 @@ export const handle = httpAction(async (ctx, request) => {
       return result({ id: args.id });
     },
   );
+  if (request.headers.get("X-Portfolio-Access") !== "update") {
+    server.registerTool(
+      "create_resume",
+      {
+        description: "Create an unpublished resume and return its ID.",
+        inputSchema: z.strictObject({ content: resume }),
+      },
+      async ({ content }) =>
+        result({
+          id: await ctx.runMutation(internal.portfolio.createResume, {
+            content: JSON.stringify(content),
+          }),
+        }),
+    );
+    server.registerTool(
+      "create_cover_letter",
+      {
+        description: "Create a cover letter and return its ID.",
+        inputSchema: z.strictObject({ content: z.string() }),
+      },
+      async (args) =>
+        result({
+          id: await ctx.runMutation(internal.portfolio.createCoverLetter, args),
+        }),
+    );
+    server.registerTool(
+      "create_job",
+      {
+        description:
+          "Create a job posting and return its ID. Dates are Unix milliseconds.",
+        inputSchema: jobFields,
+      },
+      async (args) =>
+        result({
+          id: await ctx.runMutation(internal.portfolio.createJob, args),
+        }),
+    );
+    server.registerTool(
+      "delete_resume",
+      {
+        description:
+          "Permanently delete an unpublished resume. The live resume is protected.",
+        annotations: { destructiveHint: true },
+        inputSchema: z.strictObject({ id: recordId<"resumes">() }),
+      },
+      async (args) => {
+        await ctx.runMutation(internal.portfolio.deleteResume, args);
+        return result(args);
+      },
+    );
+    server.registerTool(
+      "delete_cover_letter",
+      {
+        description: "Permanently delete a cover letter by ID.",
+        annotations: { destructiveHint: true },
+        inputSchema: z.strictObject({ id: recordId<"coverLetters">() }),
+      },
+      async (args) => {
+        await ctx.runMutation(internal.portfolio.deleteCoverLetter, args);
+        return result(args);
+      },
+    );
+    server.registerTool(
+      "delete_job",
+      {
+        description:
+          "Permanently delete a job posting by ID. Unlink any resumes or cover letters first.",
+        annotations: { destructiveHint: true },
+        inputSchema: z.strictObject({ id: recordId<"jobPostings">() }),
+      },
+      async (args) => {
+        await ctx.runMutation(internal.portfolio.deleteJob, args);
+        return result(args);
+      },
+    );
+  }
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

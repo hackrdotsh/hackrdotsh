@@ -46,6 +46,11 @@ next call's `cursor`. Use a record's `_id` to update it.
 
 `update_resume` replaces structured resume content. `update_cover_letter`
 replaces the letter text. Both preserve existing job links. `update_job` changes
-only the fields you supply. Vouches and guestbook entries are read-only. No tool
-creates or deletes records. Rotate the shared secret in both deployments to
+only the fields you supply. Use `create_resume`, `create_cover_letter`, and
+`create_job` to create records. Each returns the new ID. Their `delete_*`
+counterparts permanently delete by ID. New resumes are unpublished, and MCP
+cannot delete the live resume or a job that still has linked documents.
+Existing OAuth connections keep their original permissions; reconnect to approve
+create and delete access. Vouches and guestbook entries are read-only.
+Rotate the shared secret in both deployments to
 revoke manual tokens; OAuth grants have their own lifecycle.

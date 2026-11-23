@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 
 export const list = internalQuery({
@@ -20,6 +20,70 @@ export const list = internalQuery({
 export const updateResume = internalMutation({
   args: { id: v.id("resumes"), content: v.string() },
   handler: (ctx, { id, content }) => ctx.db.patch("resumes", id, { content }),
+});
+
+export const createResume = internalMutation({
+  args: { content: v.string() },
+  handler: (ctx, { content }) =>
+    ctx.db.insert("resumes", {
+      content,
+      createdAt: Date.now(),
+      isFrontFacing: false,
+    }),
+});
+
+export const createCoverLetter = internalMutation({
+  args: { content: v.string() },
+  handler: (ctx, { content }) =>
+    ctx.db.insert("coverLetters", {
+      content,
+      createdAt: Date.now(),
+    }),
+});
+
+export const createJob = internalMutation({
+  args: {
+    title: v.string(),
+    company: v.string(),
+    description: v.string(),
+    location: v.optional(v.string()),
+    postingPostedAt: v.optional(v.number()),
+  },
+  handler: (ctx, fields) =>
+    ctx.db.insert("jobPostings", { ...fields, createdAt: Date.now() }),
+});
+
+export const deleteResume = internalMutation({
+  args: { id: v.id("resumes") },
+  handler: async (ctx, { id }) => {
+    const doc = await ctx.db.get("resumes", id);
+    if (!doc) throw new ConvexError("Resume not found.");
+    if (doc.isFrontFacing)
+      throw new ConvexError("The live resume cannot be deleted.");
+    await ctx.db.delete("resumes", id);
+  },
+});
+
+export const deleteCoverLetter = internalMutation({
+  args: { id: v.id("coverLetters") },
+  handler: (ctx, { id }) => ctx.db.delete("coverLetters", id),
+});
+
+export const deleteJob = internalMutation({
+  args: { id: v.id("jobPostings") },
+  handler: async (ctx, { id }) => {
+    for (const table of ["resumes", "coverLetters"] as const) {
+      const linked = await ctx.db
+        .query(table)
+        .withIndex("by_jobPosting", (q) => q.eq("jobPosting", id))
+        .first();
+      if (linked)
+        throw new ConvexError(
+          "Unlink the resume or cover letter before deleting this job.",
+        );
+    }
+    await ctx.db.delete("jobPostings", id);
+  },
 });
 
 export const updateCoverLetter = internalMutation({

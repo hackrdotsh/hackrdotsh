@@ -84,7 +84,7 @@ async function authorize(req: Request, env: PortfolioEnv, oauth: OAuthHelpers) {
       const consent = await oauth.beginConsent(request);
       return accessPage(
         `Connect ${details.clientName}?`,
-        `<dl><dt>Read and update</dt><dd>Resumes, cover letters, and jobs</dd>
+        `<dl><dt>Create, read, update, and delete</dt><dd>Resumes, cover letters, and jobs. The live resume cannot be deleted.</dd>
 <dt>Read only</dt><dd>Vouches and guestbook entries</dd>
 <dt>Return address</dt><dd><code>${escapeHtml(request.redirectUri)}</code></dd></dl>
 <p>The client supplied its name. Check the return address before approving.</p>
@@ -110,7 +110,7 @@ async function authorize(req: Request, env: PortfolioEnv, oauth: OAuthHelpers) {
         "portfolio",
         ...approved.request.scope.filter((scope) => scope === "offline_access"),
       ],
-      props: { portfolio: true },
+      props: { portfolio: true, manageRecords: true },
     });
     approved.headers.set("Location", redirectTo);
     return new Response(null, { status: 303, headers: approved.headers });
@@ -159,13 +159,18 @@ ${items.length ? `<ul>${items.join("")}</ul>` : "<h2>No connected clients</h2><p
   );
 }
 
-async function forward(request: Request, env: PortfolioEnv) {
+async function forward(
+  request: Request,
+  env: PortfolioEnv,
+  manageRecords: boolean,
+) {
   if (request.method !== "POST")
     return new Response(null, { status: 405, headers: { Allow: "POST" } });
   if (!env.PORTFOLIO_MCP_TOKEN)
     return new Response("MCP connection unavailable", { status: 503 });
   const headers = new Headers({
     Authorization: `Bearer ${env.PORTFOLIO_MCP_TOKEN}`,
+    "X-Portfolio-Access": manageRecords ? "manage" : "update",
   });
   for (const name of ["accept", "content-type", "mcp-protocol-version"]) {
     const value = request.headers.get(name);
@@ -211,7 +216,7 @@ export async function portfolioRequest(
       actual.length === expected.length &&
       timingSafeEqual(actual, expected)
     )
-      return forward(req, env);
+      return forward(req, env, true);
   }
   const provider = new OAuthProvider<PortfolioEnv>({
     apiRoute: "/mcp",
@@ -222,7 +227,14 @@ export async function portfolioRequest(
         context: OAuthResourceContext<unknown>,
       ) =>
         context.auth.scope.includes("portfolio")
-          ? forward(request, bindings)
+          ? forward(
+              request,
+              bindings,
+              typeof context.props === "object" &&
+                context.props !== null &&
+                "manageRecords" in context.props &&
+                context.props.manageRecords === true,
+            )
           : insufficientScope(context.auth, ["portfolio"]),
     },
     defaultHandler: {

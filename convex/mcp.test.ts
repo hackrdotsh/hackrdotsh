@@ -35,11 +35,17 @@ test("MCP credential reads content and can update only the three allowed record 
       });
       return { job, letter, resume, vouch };
     });
-    function request(method: string, params: unknown, credential = token) {
+    function request(
+      method: string,
+      params: unknown,
+      credential = token,
+      access = "manage",
+    ) {
       return t.fetch("/mcp", {
         method: "POST",
         headers: {
           authorization: `Bearer ${credential}`,
+          "X-Portfolio-Access": access,
           accept: "application/json, text/event-stream",
           "content-type": "application/json",
         },
@@ -52,10 +58,27 @@ test("MCP credential reads content and can update only the three allowed record 
       return (await res.json()).result;
     }
     expect((await request("tools/list", {}, "wrong")).status).toBe(401);
+    const oldGrant = await (
+      await request("tools/list", {}, token, "update")
+    ).json();
+    expect(
+      oldGrant.result.tools.map((tool: { name: string }) => tool.name).sort(),
+    ).toEqual([
+      "list_records",
+      "update_cover_letter",
+      "update_job",
+      "update_resume",
+    ]);
     const discovery = await (await request("tools/list", {})).json();
     expect(
       discovery.result.tools.map((tool: { name: string }) => tool.name).sort(),
     ).toEqual([
+      "create_cover_letter",
+      "create_job",
+      "create_resume",
+      "delete_cover_letter",
+      "delete_job",
+      "delete_resume",
       "list_records",
       "update_cover_letter",
       "update_job",
@@ -104,6 +127,46 @@ test("MCP credential reads content and can update only the three allowed record 
         name: "Reviewer",
         url: "https://example.org",
       });
+    });
+    await t.run((ctx) =>
+      ctx.db.patch("resumes", ids.resume, { isFrontFacing: true }),
+    );
+    expect((await call("delete_resume", { id: ids.resume })).isError).toBe(
+      true,
+    );
+    expect((await call("delete_job", { id: ids.job })).isError).toBe(true);
+    for (const [kind, table, args] of [
+      ["resume", "resumes", { content }],
+      ["cover_letter", "coverLetters", { content: "Draft letter" }],
+      [
+        "job",
+        "jobPostings",
+        { title: "Developer", company: "Example", description: "Build tools" },
+      ],
+    ] as const) {
+      const created = await call(`create_${kind}`, args);
+      const { id } = JSON.parse(created.content[0].text);
+      async function records() {
+        const list = await call("list_records", { table });
+        return JSON.parse(list.content[0].text).page as {
+          _id: string;
+          isFrontFacing?: boolean;
+        }[];
+      }
+      const stored = (await records()).find((row) => row._id === id);
+      expect(stored).toBeDefined();
+      if (kind === "resume") expect(stored?.isFrontFacing).toBe(false);
+      expect((await call(`delete_${kind}`, { id: ids.vouch })).isError).toBe(
+        true,
+      );
+      expect((await call(`delete_${kind}`, { id })).isError).toBeFalsy();
+      expect((await records()).some((row) => row._id === id)).toBe(false);
+    }
+    await t.run(async (ctx) => {
+      expect(await ctx.db.get(ids.resume)).toMatchObject({
+        isFrontFacing: true,
+      });
+      expect(await ctx.db.get(ids.vouch)).not.toBeNull();
     });
   } finally {
     vi.unstubAllEnvs();
