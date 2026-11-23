@@ -23,6 +23,7 @@
     "@better-fetch/fetch": "1.3.1",
     "@convex-dev/better-auth": "0.12.6",
     "@gsap/react": "^2.1.2",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/typography": "^0.5.19",
     "@vinext/cloudflare": "1.0.0-beta.2",
@@ -47,6 +48,7 @@
     "@biomejs/biome": "2.4.12",
     "@cloudflare/vite-plugin": "^1.66.0",
     "@cloudflare/workers-types": "^5.20261023.1",
+    "@edge-runtime/vm": "^5.0.0",
     "@tailwindcss/postcss": "^4.2.4",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^25.6.0",
@@ -54,9 +56,11 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitejs/plugin-rsc": "^0.5.28",
+    "convex-test": "^0.0.74",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
     "vite": "^8.3.5",
+    "vitest": "^4.1.12",
     "wrangler": "^4.156.0"
   },
   "pnpm": {

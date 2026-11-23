@@ -21,3 +21,21 @@ Servers &nbsp;&nbsp; • &nbsp;&nbsp; Security &nbsp;&nbsp; • &nbsp;&nbsp; Dev
 [thenix.guide](https://thenix.guide) &nbsp;&nbsp; • &nbsp;&nbsp; [rocky.systems](https://rocky.systems) &nbsp;&nbsp; • &nbsp;&nbsp; [itsasecret.dev](https://itsasecret.dev) &nbsp;&nbsp; • &nbsp;&nbsp; [co.codes](https://co.codes)
 
 </div>
+
+## Portfolio MCP
+
+Set `PORTFOLIO_MCP_TOKEN` to a random secret in the Convex deployment settings.
+Use a dedicated token, not a Convex deploy key or an owner session. After deploying
+the Convex functions, connect a Streamable HTTP MCP client with:
+
+- **URL:** the site's `NEXT_PUBLIC_CONVEX_SITE_URL` followed by `/mcp`
+- **Header:** `Authorization: Bearer <PORTFOLIO_MCP_TOKEN>`
+
+`list_records` returns full records from `resumes`, `coverLetters`, `jobPostings`,
+`vouches`, and `guestbook`. When `isDone` is false, pass `continueCursor` as the
+next call's `cursor`. Use a record's `_id` to update it.
+
+`update_resume` replaces structured resume content. `update_cover_letter`
+replaces the letter text. Both preserve existing job links. `update_job` changes
+only the fields you supply. Vouches and guestbook entries are read-only. No tool
+creates or deletes records. Rotate or remove the token in Convex to revoke access.

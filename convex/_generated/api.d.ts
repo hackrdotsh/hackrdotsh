@@ -13,6 +13,8 @@ import type * as coverLetters from "../coverLetters.js";
 import type * as guestbook from "../guestbook.js";
 import type * as http from "../http.js";
 import type * as jobPostings from "../jobPostings.js";
+import type * as mcp from "../mcp.js";
+import type * as portfolio from "../portfolio.js";
 import type * as resumes from "../resumes.js";
 import type * as vouches from "../vouches.js";
 
@@ -28,6 +30,8 @@ declare const fullApi: ApiFromModules<{
   guestbook: typeof guestbook;
   http: typeof http;
   jobPostings: typeof jobPostings;
+  mcp: typeof mcp;
+  portfolio: typeof portfolio;
   resumes: typeof resumes;
   vouches: typeof vouches;
 }>;
