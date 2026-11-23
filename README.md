@@ -26,9 +26,11 @@ Servers &nbsp;&nbsp; • &nbsp;&nbsp; Security &nbsp;&nbsp; • &nbsp;&nbsp; Dev
 
 Set `PORTFOLIO_MCP_TOKEN` to a random secret in the Convex deployment settings.
 Use a dedicated token, not a Convex deploy key or an owner session. After deploying
-the Convex functions, connect a Streamable HTTP MCP client with:
+the Convex functions and site, [install in VS Code](https://hackr.sh/mcp/install).
+Start VS Code with `PORTFOLIO_MCP_TOKEN` in its environment. The install link
+contains only the variable name. For other Streamable HTTP MCP clients, use:
 
-- **URL:** the site's `NEXT_PUBLIC_CONVEX_SITE_URL` followed by `/mcp`
+- **URL:** `https://hackr.sh/mcp`
 - **Header:** `Authorization: Bearer <PORTFOLIO_MCP_TOKEN>`
 
 `list_records` returns full records from `resumes`, `coverLetters`, `jobPostings`,
