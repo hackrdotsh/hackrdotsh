@@ -26,6 +26,22 @@ function convexUrl(env: PortfolioEnv, path: string) {
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
+function accessPage(title: string, content: string, init: ResponseInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set("Content-Type", "text/html; charset=utf-8");
+  headers.set("Cache-Control", "no-store");
+  // Native form POSTs need their Origin for the same-origin approval check.
+  headers.set("Referrer-Policy", "same-origin");
+  return new Response(
+    `<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(title)} | hackr.sh</title><link rel="stylesheet" href="/portfolio-access.css">
+</head><body><header><a href="/">hackr.sh</a><span>/ portfolio</span></header>
+<main><h1>${escapeHtml(title)}</h1>${content}</main></body></html>`,
+    { ...init, headers },
+  );
+}
+
 async function owner(
   req: Request,
   env: PortfolioEnv,
@@ -66,15 +82,13 @@ async function authorize(req: Request, env: PortfolioEnv, oauth: OAuthHelpers) {
       const request = await oauth.parseAuthRequest(req);
       const details = await oauth.describeConsent(request);
       const consent = await oauth.beginConsent(request);
-      consent.headers.set("Content-Type", "text/html; charset=utf-8");
-      consent.headers.set("Cache-Control", "no-store");
-      consent.headers.set("Referrer-Policy", "no-referrer");
-      return new Response(
-        `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Portfolio access</title>
-<main><h1>Allow ${escapeHtml(details.clientName)} to access your portfolio?</h1>
-<p>The client can read all portfolio records and update resumes, cover letters, and jobs. Vouches and guestbook entries are read-only.</p>
-<p>Check the return address: <code>${escapeHtml(request.redirectUri)}</code>. The client supplied its name.</p>
-<form method="post"><input type="hidden" name="handle" value="${escapeHtml(consent.handle)}"><button name="decision" value="deny">Cancel</button> <button name="decision" value="allow">Allow access</button></form></main></html>`,
+      return accessPage(
+        `Connect ${details.clientName}?`,
+        `<dl><dt>Read and update</dt><dd>Resumes, cover letters, and jobs</dd>
+<dt>Read only</dt><dd>Vouches and guestbook entries</dd>
+<dt>Return address</dt><dd><code>${escapeHtml(request.redirectUri)}</code></dd></dl>
+<p>The client supplied its name. Check the return address before approving.</p>
+<form method="post" action="/oauth/authorize"><input type="hidden" name="handle" value="${escapeHtml(consent.handle)}"><button name="decision" value="deny">Cancel</button><button name="decision" value="allow">Allow access</button></form>`,
         { headers: consent.headers },
       );
     }
@@ -104,7 +118,11 @@ async function authorize(req: Request, env: PortfolioEnv, oauth: OAuthHelpers) {
     if (!(error instanceof AuthorizationError)) throw error;
     return error.redirectTo
       ? Response.redirect(error.redirectTo, 303)
-      : new Response(error.description, { status: 400 });
+      : accessPage(
+          "Connection not approved",
+          `<p>${escapeHtml(error.description)}</p><p>Start a new connection from your MCP client.</p>`,
+          { status: 400 },
+        );
   }
 }
 
@@ -134,15 +152,10 @@ async function manage(req: Request, env: PortfolioEnv, oauth: OAuthHelpers) {
   const more = page.cursor
     ? `<a href="?cursor=${encodeURIComponent(page.cursor)}">Next page</a>`
     : "";
-  return new Response(
-    `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MCP authorizations</title><main><a href="/">Home</a><h1>MCP authorizations</h1>${items.length ? `<ul>${items.join("")}</ul>` : "<p>No OAuth authorizations.</p>"}${more}</main></html>`,
-    {
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-        "Referrer-Policy": "no-referrer",
-      },
-    },
+  return accessPage(
+    "MCP authorizations",
+    `<dl><dt>Server URL</dt><dd><code>${escapeHtml(url.origin)}/mcp</code></dd></dl>
+${items.length ? `<ul>${items.join("")}</ul>` : "<h2>No connected clients</h2><p>Add the server URL in your MCP client and choose OAuth. After you approve access, the client appears here.</p>"}${more}`,
   );
 }
 

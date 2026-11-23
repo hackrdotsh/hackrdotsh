@@ -1,0 +1,100 @@
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DMSans.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Departure Mono";
+  src: url("/fonts/DepartureMono-Regular.otf") format("opentype");
+  font-display: swap;
+}
+:root {
+  color-scheme: dark;
+  --accent: oklch(0.7 0.19 170);
+  --line: #353632;
+  background: oklch(0.156 0.003 75);
+  color: oklch(0.93 0.005 90);
+  font:
+    100% / 1.55 "DM Sans",
+    system-ui,
+    sans-serif;
+}
+body {
+  max-width: 44rem;
+  margin: auto;
+  padding: clamp(1rem, 5vw, 4rem);
+}
+header,
+form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+}
+header,
+dt,
+code,
+button,
+time {
+  font-family: "Departure Mono", monospace;
+  font-size: 0.82rem;
+}
+h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  margin: 3rem 0 1.5rem;
+}
+h2 {
+  font-size: 1.2rem;
+}
+dl,
+li {
+  padding: 1.25rem 0;
+  border-block-start: 1px solid var(--line);
+}
+dt,
+time,
+header span {
+  color: #b0b1aa;
+}
+dd {
+  margin: 0.25rem 0 1rem;
+}
+li,
+dd,
+code,
+h1 {
+  overflow-wrap: anywhere;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+a,
+code {
+  color: var(--accent);
+}
+button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+button[value="allow"] {
+  background: var(--accent);
+  color: #101410;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+button:hover {
+  border-color: currentColor;
+}
