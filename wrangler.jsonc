@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "hackrdev",
+  "name": "hackrdotsh",
   "main": "./worker/index.ts",
   "account_id": "3384f0c121186684d1ff5ba91cb5b23a",
   "compatibility_date": "2026-04-13",
@@ -11,7 +11,7 @@
   },
   "kv_namespaces": [
     { "binding": "VINEXT_KV_CACHE", "id": "b831ce727b4e40df94d471c0181b4cef" },
-    { "binding": "OAUTH_KV" }
+    { "binding": "OAUTH_KV", "id": "e1231c33e57a49278ab4cfc3c1df4b5e" }
   ],
   "images": {
     "binding": "IMAGES"
