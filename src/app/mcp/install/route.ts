@@ -1,17 +1,6 @@
 export function GET() {
-  const installer = new URL("https://insiders.vscode.dev/redirect/mcp/install");
-  installer.searchParams.set("name", "hackr-portfolio");
-  installer.searchParams.set(
-    "config",
-    JSON.stringify({
-      type: "http",
-      url: "https://hackr.sh/mcp",
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: VS Code expands this on the client.
-      headers: { Authorization: "Bearer ${env:PORTFOLIO_MCP_TOKEN}" },
-    }),
+  return new Response(
+    "Add https://hackr.sh/mcp as a remote Streamable HTTP MCP server in your client. Choose OAuth, sign in with your owner passkey, and approve the connection. For clients without OAuth, use an Authorization: Bearer header with your portfolio token.",
+    { headers: { "Content-Type": "text/plain; charset=utf-8" } },
   );
-  return new Response(null, {
-    status: 302,
-    headers: { Location: installer.href },
-  });
 }

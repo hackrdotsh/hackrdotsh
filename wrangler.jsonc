@@ -10,7 +10,8 @@
     "not_found_handling": "none"
   },
   "kv_namespaces": [
-    { "binding": "VINEXT_KV_CACHE", "id": "b831ce727b4e40df94d471c0181b4cef" }
+    { "binding": "VINEXT_KV_CACHE", "id": "b831ce727b4e40df94d471c0181b4cef" },
+    { "binding": "OAUTH_KV" }
   ],
   "images": {
     "binding": "IMAGES"

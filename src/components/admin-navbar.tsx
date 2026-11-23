@@ -5,6 +5,7 @@ import gsap from "gsap";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
+import { isOwnerEmail } from "~/lib/admin";
 import { authClient } from "~/lib/auth-client";
 import { onPageReady } from "~/lib/page-ready";
 import { cn } from "~/lib/util";
@@ -69,6 +70,14 @@ export function AdminNavbar() {
             {link.label}
           </Link>
         ))}
+        {isOwnerEmail(session.user.email) && (
+          <a
+            href="/admin/mcp"
+            className="font-mono text-xs text-muted-foreground hover:text-foreground"
+          >
+            MCP
+          </a>
+        )}
       </div>
     </nav>
   );

@@ -1,7 +1,8 @@
 import type { ExecutionContext, Fetcher } from "@cloudflare/workers-types";
 import handler from "vinext/server/fetch-handler";
+import { type PortfolioEnv, portfolioRequest } from "./portfolio-oauth";
 
-interface Env {
+interface Env extends PortfolioEnv {
   ASSETS: Fetcher;
 }
 
@@ -37,6 +38,9 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<Response> {
-    return withSecurityHeaders(await handler.fetch(request, env, ctx));
+    const portfolio = await portfolioRequest(request, env, ctx);
+    return withSecurityHeaders(
+      portfolio ?? (await handler.fetch(request, env, ctx)),
+    );
   },
 };

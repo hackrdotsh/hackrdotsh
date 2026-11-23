@@ -24,6 +24,18 @@ export default function SignInPage() {
       setError(error.message ?? "sign in failed");
       return;
     }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("manage") === "mcp") {
+      window.location.assign("/admin/mcp");
+      return;
+    }
+    const authorize = params.get("authorize");
+    if (authorize) {
+      window.location.assign(
+        `/oauth/authorize?${new URLSearchParams(authorize)}`,
+      );
+      return;
+    }
     router.push("/");
     router.refresh();
   };

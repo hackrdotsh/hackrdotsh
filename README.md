@@ -24,14 +24,21 @@ Servers &nbsp;&nbsp; • &nbsp;&nbsp; Security &nbsp;&nbsp; • &nbsp;&nbsp; Dev
 
 ## Portfolio MCP
 
-Set `PORTFOLIO_MCP_TOKEN` to a random secret in the Convex deployment settings.
-Use a dedicated token, not a Convex deploy key or an owner session. After deploying
-the Convex functions and site, [install in VS Code](https://hackr.sh/mcp/install).
-Start VS Code with `PORTFOLIO_MCP_TOKEN` in its environment. The install link
-contains only the variable name. For other Streamable HTTP MCP clients, use:
+Add `https://hackr.sh/mcp` to your client as a remote Streamable HTTP server.
+Choose OAuth, sign in with your owner passkey, check the client's return address,
+and select **Allow access**. Clients that support dynamic registration need only
+the URL. For clients that accept a manual token instead, set
+`Authorization: Bearer <PORTFOLIO_MCP_TOKEN>` in the client's secret store.
 
-- **URL:** `https://hackr.sh/mcp`
-- **Header:** `Authorization: Bearer <PORTFOLIO_MCP_TOKEN>`
+Each approval creates a separate OAuth authorization, including repeat approvals
+for the same client. Open **MCP** in the admin navigation or visit
+[`/admin/mcp`](https://hackr.sh/admin/mcp) to revoke one without disconnecting
+the others. This page manages OAuth grants, not the shared manual token.
+
+For deployment, bind a dedicated Cloudflare KV namespace as `OAUTH_KV` for OAuth
+registrations and grants. Set the same random `PORTFOLIO_MCP_TOKEN` secret in
+the Worker and Convex, and point `NEXT_PUBLIC_CONVEX_SITE_URL` at the deployment's
+HTTP actions URL. OAuth clients never receive the Worker-to-Convex secret.
 
 `list_records` returns full records from `resumes`, `coverLetters`, `jobPostings`,
 `vouches`, and `guestbook`. When `isDone` is false, pass `continueCursor` as the
@@ -40,4 +47,5 @@ next call's `cursor`. Use a record's `_id` to update it.
 `update_resume` replaces structured resume content. `update_cover_letter`
 replaces the letter text. Both preserve existing job links. `update_job` changes
 only the fields you supply. Vouches and guestbook entries are read-only. No tool
-creates or deletes records. Rotate or remove the token in Convex to revoke access.
+creates or deletes records. Rotate the shared secret in both deployments to
+revoke manual tokens; OAuth grants have their own lifecycle.
