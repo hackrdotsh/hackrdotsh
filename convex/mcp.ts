@@ -43,6 +43,10 @@ const resume = z.strictObject({
     .nullable(),
 });
 
+const jobPosting = recordId<"jobPostings">().describe(
+  "The ID returned by create_job or the _id from list_records for jobPostings.",
+);
+
 function result(value: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }] };
 }
@@ -96,16 +100,18 @@ export const handle = httpAction(async (ctx, request) => {
     "update_resume",
     {
       description:
-        "Replace an existing resume's content. Its publication status and job link are preserved.",
+        "Update resume content or its jobPosting link. Omit jobPosting to keep the link, or pass null to remove it. The live resume cannot be linked to a job.",
       inputSchema: z.strictObject({
         id: recordId<"resumes">(),
-        content: resume,
+        content: resume.optional(),
+        jobPosting: jobPosting.nullable().optional(),
       }),
     },
-    async ({ id, content }) => {
+    async ({ id, content, jobPosting }) => {
       await ctx.runMutation(internal.portfolio.updateResume, {
         id,
         content: JSON.stringify(content),
+        jobPosting,
       });
       return result({ id });
     },
@@ -114,10 +120,11 @@ export const handle = httpAction(async (ctx, request) => {
     "update_cover_letter",
     {
       description:
-        "Replace an existing cover letter's text, preserving its job link.",
+        "Update cover letter text or its jobPosting link. Omit jobPosting to keep the link, or pass null to remove it.",
       inputSchema: z.strictObject({
         id: recordId<"coverLetters">(),
-        content: z.string(),
+        content: z.string().optional(),
+        jobPosting: jobPosting.nullable().optional(),
       }),
     },
     async (args) => {
@@ -145,21 +152,30 @@ export const handle = httpAction(async (ctx, request) => {
     server.registerTool(
       "create_resume",
       {
-        description: "Create an unpublished resume and return its ID.",
-        inputSchema: z.strictObject({ content: resume }),
+        description:
+          "Create an unpublished resume and return its ID. For a job-specific draft, set jobPosting to the original job's ID.",
+        inputSchema: z.strictObject({
+          content: resume,
+          jobPosting: jobPosting.optional(),
+        }),
       },
-      async ({ content }) =>
+      async ({ content, jobPosting }) =>
         result({
           id: await ctx.runMutation(internal.portfolio.createResume, {
             content: JSON.stringify(content),
+            jobPosting,
           }),
         }),
     );
     server.registerTool(
       "create_cover_letter",
       {
-        description: "Create a cover letter and return its ID.",
-        inputSchema: z.strictObject({ content: z.string() }),
+        description:
+          "Create a cover letter and return its ID. For a job-specific draft, set jobPosting to the original job's ID.",
+        inputSchema: z.strictObject({
+          content: z.string(),
+          jobPosting: jobPosting.optional(),
+        }),
       },
       async (args) =>
         result({

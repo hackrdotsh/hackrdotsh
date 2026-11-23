@@ -45,7 +45,11 @@ HTTP actions URL. OAuth clients never receive the Worker-to-Convex secret.
 next call's `cursor`. Use a record's `_id` to update it.
 
 `update_resume` replaces structured resume content. `update_cover_letter`
-replaces the letter text. Both preserve existing job links. `update_job` changes
+replaces the letter text. To link a resume or cover letter, pass `jobPosting`
+with the stored job's `_id` when creating or updating the document. To link
+an existing draft without rewriting it, pass only `id` and `jobPosting`.
+Omitting `jobPosting` preserves the link; setting it to `null` removes it.
+The live resume cannot be linked to a job. `update_job` changes
 only the fields you supply. Use `create_resume`, `create_cover_letter`, and
 `create_job` to create records. Each returns the new ID. Their `delete_*`
 counterparts permanently delete by ID. New resumes are unpublished, and MCP

@@ -1,5 +1,39 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, internalQuery } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import {
+  internalMutation,
+  internalQuery,
+  type MutationCtx,
+} from "./_generated/server";
+
+const createFields = {
+  content: v.string(),
+  jobPosting: v.optional(v.id("jobPostings")),
+};
+const updateFields = {
+  content: v.optional(v.string()),
+  jobPosting: v.optional(v.union(v.id("jobPostings"), v.null())),
+};
+
+async function checkJob(ctx: MutationCtx, id?: Id<"jobPostings"> | null) {
+  if (id && !(await ctx.db.get("jobPostings", id)))
+    throw new ConvexError("Job posting not found.");
+}
+
+async function documentPatch(
+  ctx: MutationCtx,
+  fields: { content?: string; jobPosting?: Id<"jobPostings"> | null },
+) {
+  if (fields.content === undefined && fields.jobPosting === undefined)
+    throw new ConvexError("Supply content or jobPosting.");
+  await checkJob(ctx, fields.jobPosting);
+  return {
+    ...(fields.content !== undefined && { content: fields.content }),
+    ...(fields.jobPosting !== undefined && {
+      jobPosting: fields.jobPosting ?? undefined,
+    }),
+  };
+}
 
 export const list = internalQuery({
   args: {
@@ -18,27 +52,35 @@ export const list = internalQuery({
 });
 
 export const updateResume = internalMutation({
-  args: { id: v.id("resumes"), content: v.string() },
-  handler: (ctx, { id, content }) => ctx.db.patch("resumes", id, { content }),
+  args: { id: v.id("resumes"), ...updateFields },
+  handler: async (ctx, { id, ...fields }) => {
+    if (fields.jobPosting && (await ctx.db.get("resumes", id))?.isFrontFacing)
+      throw new ConvexError("Cannot link a job posting to the live resume.");
+    await ctx.db.patch("resumes", id, await documentPatch(ctx, fields));
+  },
 });
 
 export const createResume = internalMutation({
-  args: { content: v.string() },
-  handler: (ctx, { content }) =>
-    ctx.db.insert("resumes", {
-      content,
+  args: createFields,
+  handler: async (ctx, fields) => {
+    await checkJob(ctx, fields.jobPosting);
+    return ctx.db.insert("resumes", {
+      ...fields,
       createdAt: Date.now(),
       isFrontFacing: false,
-    }),
+    });
+  },
 });
 
 export const createCoverLetter = internalMutation({
-  args: { content: v.string() },
-  handler: (ctx, { content }) =>
-    ctx.db.insert("coverLetters", {
-      content,
+  args: createFields,
+  handler: async (ctx, fields) => {
+    await checkJob(ctx, fields.jobPosting);
+    return ctx.db.insert("coverLetters", {
+      ...fields,
       createdAt: Date.now(),
-    }),
+    });
+  },
 });
 
 export const createJob = internalMutation({
@@ -87,9 +129,9 @@ export const deleteJob = internalMutation({
 });
 
 export const updateCoverLetter = internalMutation({
-  args: { id: v.id("coverLetters"), content: v.string() },
-  handler: (ctx, { id, content }) =>
-    ctx.db.patch("coverLetters", id, { content }),
+  args: { id: v.id("coverLetters"), ...updateFields },
+  handler: async (ctx, { id, ...fields }) =>
+    ctx.db.patch("coverLetters", id, await documentPatch(ctx, fields)),
 });
 
 export const updateJob = internalMutation({

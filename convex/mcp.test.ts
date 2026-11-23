@@ -135,9 +135,17 @@ test("MCP credential reads content and can update only the three allowed record 
       true,
     );
     expect((await call("delete_job", { id: ids.job })).isError).toBe(true);
+    expect(
+      (await call("update_resume", { id: ids.resume, jobPosting: ids.job }))
+        .isError,
+    ).toBe(true);
     for (const [kind, table, args] of [
-      ["resume", "resumes", { content }],
-      ["cover_letter", "coverLetters", { content: "Draft letter" }],
+      ["resume", "resumes", { content, jobPosting: ids.job }],
+      [
+        "cover_letter",
+        "coverLetters",
+        { content: "Draft letter", jobPosting: ids.job },
+      ],
       [
         "job",
         "jobPostings",
@@ -150,12 +158,33 @@ test("MCP credential reads content and can update only the three allowed record 
         const list = await call("list_records", { table });
         return JSON.parse(list.content[0].text).page as {
           _id: string;
+          content?: string;
+          jobPosting?: string;
           isFrontFacing?: boolean;
         }[];
       }
       const stored = (await records()).find((row) => row._id === id);
       expect(stored).toBeDefined();
       if (kind === "resume") expect(stored?.isFrontFacing).toBe(false);
+      if (kind !== "job") {
+        expect(stored?.jobPosting).toBe(ids.job);
+        expect(
+          (await call(`update_${kind}`, { id, jobPosting: null })).isError,
+        ).toBeFalsy();
+        expect(
+          (await records()).find((row) => row._id === id)?.jobPosting,
+        ).toBeUndefined();
+        expect(
+          (await call(`update_${kind}`, { id, jobPosting: ids.vouch })).isError,
+        ).toBe(true);
+        expect(
+          (await call(`update_${kind}`, { id, jobPosting: ids.job })).isError,
+        ).toBeFalsy();
+        expect((await records()).find((row) => row._id === id)).toMatchObject({
+          content: stored?.content,
+          jobPosting: ids.job,
+        });
+      }
       expect((await call(`delete_${kind}`, { id: ids.vouch })).isError).toBe(
         true,
       );
