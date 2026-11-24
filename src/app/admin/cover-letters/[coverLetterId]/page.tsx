@@ -12,6 +12,7 @@ import {
   SaveBar,
   StatusText,
 } from "~/components/admin/ui";
+import { ConfirmDialog } from "~/components/confirm-dialog";
 import { DownloadCoverLetterButton } from "~/components/download-cover-letter-button";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
@@ -33,6 +34,7 @@ export default function EditCoverLetterPage() {
     useState<Id<"jobPostings"> | null>(null);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   const loadCoverLetter = useCallback(() => {
@@ -79,7 +81,6 @@ export default function EditCoverLetterPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this cover letter? This cannot be undone.")) return;
     await removeCoverLetter({ id: params.coverLetterId });
     router.push("/admin/cover-letters");
   };
@@ -124,7 +125,11 @@ export default function EditCoverLetterPage() {
             company={selectedJp?.company}
           />
         )}
-        <Button variant="destructive" size="sm" onClick={handleDelete}>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setConfirmingDelete(true)}
+        >
           <Trash2 />
           Delete
         </Button>
@@ -176,6 +181,15 @@ export default function EditCoverLetterPage() {
           Save
         </Button>
       </SaveBar>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title="Delete this cover letter?"
+        description="This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+      />
     </AdminShell>
   );
 }

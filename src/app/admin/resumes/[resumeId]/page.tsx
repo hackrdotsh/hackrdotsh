@@ -23,6 +23,7 @@ import {
   SaveBar,
   StatusText,
 } from "~/components/admin/ui";
+import { ConfirmDialog } from "~/components/confirm-dialog";
 import { DownloadResumeButton } from "~/components/download-resume-button";
 import { Button } from "~/components/ui/button";
 import {
@@ -455,6 +456,7 @@ export default function EditResumePage() {
     useState<Id<"jobPostings"> | null>(null);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   const loadResume = useCallback(() => {
@@ -508,7 +510,6 @@ export default function EditResumePage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this resume? This cannot be undone.")) return;
     await removeResume({ id: params.resumeId });
     router.push("/admin/resumes");
   };
@@ -608,7 +609,11 @@ export default function EditResumePage() {
           company={selectedJp?.company}
           position={selectedJp?.title}
         />
-        <Button variant="destructive" size="sm" onClick={handleDelete}>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setConfirmingDelete(true)}
+        >
           <Trash2 />
           Delete
         </Button>
@@ -706,6 +711,15 @@ export default function EditResumePage() {
           Save
         </Button>
       </SaveBar>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title="Delete this resume?"
+        description="This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+      />
     </AdminShell>
   );
 }

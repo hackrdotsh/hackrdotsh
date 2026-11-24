@@ -12,6 +12,7 @@ import {
   SaveBar,
   StatusText,
 } from "~/components/admin/ui";
+import { ConfirmDialog } from "~/components/confirm-dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -31,6 +32,7 @@ export default function EditJobPostingPage() {
   const [location, setLocation] = useState("");
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const loadJobPosting = useCallback(() => {
     if (!jobPosting) return;
@@ -80,7 +82,6 @@ export default function EditJobPostingPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this job posting? This cannot be undone.")) return;
     await removeJobPosting({ id: params.jobPostingId });
     router.push("/admin/job-postings");
   };
@@ -91,7 +92,11 @@ export default function EditJobPostingPage() {
         title="Edit posting"
         meta={new Date(jobPosting.createdAt).toLocaleDateString("en-CA")}
       >
-        <Button variant="destructive" size="sm" onClick={handleDelete}>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setConfirmingDelete(true)}
+        >
           <Trash2 />
           Delete
         </Button>
@@ -153,6 +158,15 @@ export default function EditJobPostingPage() {
           Save
         </Button>
       </SaveBar>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title="Delete this job posting?"
+        description="This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+      />
     </AdminShell>
   );
 }
