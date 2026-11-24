@@ -1,0 +1,653 @@
+/* The pixel system. Dither is the material: tone comes from pattern density,
+   never from blur or gradients. Corners are square. Colour and pattern change
+   at once; the only eased motion is a raised button's lift and press and a
+   list's highlight bar sliding between items. */
+
+:root {
+  /* Dither masks, one cell = 2px. They carry no colour: paint with
+     background-color and apply one as a mask. */
+  --dither-25: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM0 2h1v1H0zM2 2h1v1H2z'/%3E%3C/svg%3E");
+  --dither-50: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E");
+  --dither-75: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h4v1H0zM0 1h1v1H0zM2 1h1v1H2zM0 2h4v1H0zM0 3h1v1H0zM2 3h1v1H2z'/%3E%3C/svg%3E");
+  --solid: linear-gradient(#000 0 0);
+
+  /* Raised buttons lift and press quickly; nothing else on them moves. */
+  --press-duration: 90ms;
+  --press-ease: cubic-bezier(0.2, 0, 0, 1);
+  /* A list's highlight bar sliding from one item to the next. */
+  --slide-duration: 120ms;
+
+  /* Elevation. Surfaces step lighter instead of drawing borders; shadows
+     lift what sits above them: 1 for controls, 2 for raised panels, 3 for
+     what floats over the page. */
+  --lift-1: 0 1px 2px rgb(0 0 0 / 0.5), 0 3px 8px rgb(0 0 0 / 0.35);
+  --lift-2: 0 2px 4px rgb(0 0 0 / 0.45), 0 12px 28px rgb(0 0 0 / 0.45);
+  --lift-3: 0 8px 16px rgb(0 0 0 / 0.5), 0 28px 72px rgb(0 0 0 / 0.65);
+}
+
+/* Pixel type. Departure Mono is drawn on an 11px grid, so it only appears at
+   whole multiples of 11. */
+@utility pixel-11 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+@utility pixel-22 {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  line-height: 28px;
+  letter-spacing: 0;
+}
+
+@utility pixel-33 {
+  font-family: var(--font-mono);
+  font-size: 33px;
+  line-height: 40px;
+  letter-spacing: 0;
+}
+
+@utility pixel-44 {
+  font-family: var(--font-mono);
+  font-size: 44px;
+  line-height: 48px;
+  letter-spacing: 0;
+}
+
+@utility pixel-66 {
+  font-family: var(--font-mono);
+  font-size: 66px;
+  line-height: 68px;
+  letter-spacing: 0;
+}
+
+@utility pixel-88 {
+  font-family: var(--font-mono);
+  font-size: 88px;
+  line-height: 88px;
+  letter-spacing: 0;
+}
+
+/* A flat field of dither in the current colour. */
+@utility dither-25 {
+  background-color: currentColor;
+  mask: var(--dither-25);
+}
+
+@utility dither-50 {
+  background-color: currentColor;
+  mask: var(--dither-50);
+}
+
+@utility dither-75 {
+  background-color: currentColor;
+  mask: var(--dither-75);
+}
+
+@property --depth {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@layer components {
+  /* ---------- rule ---------- */
+
+  /* One cell tall, between sections. */
+  .rule {
+    display: block;
+    height: 2px;
+    border: 0;
+    background-color: var(--rule, var(--surface-3));
+  }
+
+  /* ---------- frame ---------- */
+
+  /* A dithered frame two cells wide around a solid face. --frame sets its
+     colour and --frame-pattern its density. */
+  .dither-frame {
+    --frame: color-mix(in oklab, var(--foreground) 40%, transparent);
+    --frame-pattern: var(--dither-50);
+    position: relative;
+    border: 4px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .dither-frame::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    padding: 4px;
+    background: var(--frame);
+    mask:
+      var(--frame-pattern) intersect,
+      var(--solid) content-box exclude,
+      var(--solid);
+    pointer-events: none;
+  }
+
+  /* ---------- buttons ---------- */
+
+  .btn {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 16px;
+    border: 0;
+    background: none;
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .btn:is(:disabled, [aria-disabled="true"]) {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .btn svg {
+    flex: none;
+    pointer-events: none;
+  }
+
+  .btn svg:not([class*="size-"]) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .btn[data-loading] {
+    color: transparent;
+  }
+
+  /* Primary, secondary and danger: a solid face standing on a dithered
+     extrusion two cells deep. Hover lifts it a cell; pressing pushes it down
+     into the extrusion. The extrusion hangs outside the box so the face
+     lines up with its neighbours; leave at least 8px beside and below it. */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    --depth: 4px;
+    background: var(--face);
+    /* A drop shadow follows the extrusion's shape; a box shadow would not. */
+    filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.55));
+    /* The face and its extrusion travel together, so --depth is a registered
+       length that can be interpolated. */
+    transition:
+      translate var(--press-duration) var(--press-ease),
+      --depth var(--press-duration) var(--press-ease);
+  }
+
+  .btn-primary {
+    --face: var(--accent);
+    --extrusion: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .btn-secondary {
+    --face: var(--surface-3);
+    --extrusion: var(--muted-foreground);
+    font-weight: 500;
+  }
+
+  .btn-danger {
+    --face: var(--danger-surface-strong);
+    --extrusion: color-mix(in oklab, var(--danger) 75%, transparent);
+    color: var(--danger);
+    font-weight: 500;
+  }
+
+  /* The extrusion: the button's own box, moved down and right, clipped to
+     the part that shows. */
+  :is(.btn-primary, .btn-secondary, .btn-danger)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    translate: var(--depth) var(--depth);
+    background: var(--extrusion);
+    mask: var(--dither-50);
+    clip-path: polygon(
+      calc(100% - var(--depth)) 0,
+      100% 0,
+      100% 100%,
+      0 100%,
+      0 calc(100% - var(--depth)),
+      calc(100% - var(--depth)) calc(100% - var(--depth))
+    );
+    pointer-events: none;
+  }
+
+  :is(.btn-primary, .btn-secondary, .btn-danger):hover:not(
+      :disabled,
+      [aria-disabled="true"]
+    ) {
+    --depth: 6px;
+    translate: -2px -2px;
+  }
+
+  :is(.btn-primary, .btn-secondary, .btn-danger):is(
+      :active,
+      [data-pressed]
+    ):not(:disabled, [aria-disabled="true"]),
+  :is(.btn-primary, .btn-secondary, .btn-danger):is(
+      :disabled,
+      [aria-disabled="true"]
+    ) {
+    --depth: 0px;
+    translate: 4px 4px;
+    filter: none;
+  }
+
+  .btn-primary[data-loading] [data-slot="button-loading-indicator"] {
+    color: var(--accent-foreground);
+  }
+
+  .btn-secondary[data-loading] [data-slot="button-loading-indicator"] {
+    color: var(--foreground);
+  }
+
+  .btn-danger[data-loading] [data-slot="button-loading-indicator"] {
+    color: var(--danger);
+  }
+
+  /* Ghost: no ground until it is touched. */
+  .btn-ghost {
+    font-weight: 500;
+  }
+
+  .btn-ghost:hover:not(:disabled, [aria-disabled="true"]) {
+    background: var(--surface-2);
+  }
+
+  .btn-ghost:is(:active, [data-pressed]):not(
+      :disabled,
+      [aria-disabled="true"]
+    ) {
+    background: var(--surface-3);
+  }
+
+  .btn-ghost[data-loading] [data-slot="button-loading-indicator"] {
+    color: var(--foreground);
+  }
+
+  .btn-link {
+    min-height: 0;
+    padding: 0;
+    font-weight: 500;
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(
+      in oklab,
+      var(--foreground) 30%,
+      transparent
+    );
+    text-underline-offset: 3px;
+  }
+
+  .btn-link:hover:not(:disabled, [aria-disabled="true"]) {
+    text-decoration-color: currentColor;
+  }
+
+  /* Sizes. Heights stay on the 4px grid. */
+  .btn-xs {
+    gap: 4px;
+    min-height: 24px;
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+
+  .btn-sm {
+    gap: 6px;
+    min-height: 28px;
+    padding-inline: 10px;
+    font-size: 13px;
+  }
+
+  .btn-lg {
+    min-height: 40px;
+    padding-inline: 20px;
+  }
+
+  .btn-xl {
+    min-height: 44px;
+    padding-inline: 24px;
+    font-size: 16px;
+  }
+
+  .btn-icon {
+    --size: 36px;
+    width: var(--size);
+    min-height: var(--size);
+    padding: 0;
+  }
+
+  .btn-icon.btn-xs {
+    --size: 24px;
+  }
+
+  .btn-icon.btn-sm {
+    --size: 28px;
+  }
+
+  .btn-icon.btn-lg {
+    --size: 40px;
+  }
+
+  .btn-icon.btn-xl {
+    --size: 44px;
+  }
+
+  /* ---------- fields ---------- */
+
+  .field {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 0;
+    background: var(--surface-2);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 20px;
+    outline: none;
+  }
+
+  textarea.field {
+    padding-block: 8px;
+    resize: none;
+  }
+
+  .field::placeholder {
+    color: var(--faint);
+  }
+
+  .field:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+
+  .field:focus-visible {
+    background: var(--surface-2);
+    outline: 2px solid var(--accent);
+  }
+
+  .field[aria-invalid="true"] {
+    outline: 2px solid var(--danger);
+  }
+
+  .field:disabled {
+    opacity: 0.5;
+  }
+
+  /* ---------- select ---------- */
+
+  /* The trigger is a field; the list opens below it as a raised panel. */
+  .select-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    background: var(--surface-2);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 20px;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+  }
+
+  .select-trigger:hover:not([data-disabled]),
+  .select-trigger[data-popup-open] {
+    background: var(--surface-3);
+  }
+
+  .select-trigger:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+
+  .select-trigger[aria-invalid="true"] {
+    outline: 2px solid var(--danger);
+  }
+
+  .select-trigger[data-disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .select-popup {
+    min-width: var(--anchor-width);
+    background: var(--surface-1);
+    color: var(--foreground);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.04),
+      var(--lift-3);
+    outline: none;
+  }
+
+  .select-list {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    max-height: var(--available-height);
+    padding: 4px;
+    overflow-y: auto;
+  }
+
+  .select-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 32px;
+    padding: 4px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: default;
+    outline: none;
+  }
+
+  /* One highlight bar slides between items: a lighter surface with the same
+     dithered marker as a row under the pointer. select.tsx publishes where
+     the highlighted item sits. */
+  .select-list::before,
+  .select-list::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 4px;
+    height: var(--highlight-height, 0);
+    translate: 0 var(--highlight-top, 0);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .select-list::before {
+    right: 4px;
+    background: var(--surface-3);
+  }
+
+  .select-list::after {
+    width: 4px;
+    background: var(--accent);
+    mask: var(--dither-50);
+  }
+
+  .select-list[data-highlight]::before,
+  .select-list[data-highlight]::after {
+    visibility: visible;
+  }
+
+  /* Nothing is highlighted: fade out after a beat, so crossing the gap
+     between two items doesn't blink. */
+  .select-list[data-highlight="resting"]::before,
+  .select-list[data-highlight="resting"]::after {
+    opacity: 0;
+    transition: opacity 0s linear var(--slide-duration);
+  }
+
+  .select-list[data-highlight="moving"]::before,
+  .select-list[data-highlight="moving"]::after {
+    transition:
+      translate var(--slide-duration) var(--press-ease),
+      height var(--slide-duration) var(--press-ease);
+  }
+
+  /* A lit pixel marks the chosen item. */
+  .select-item[data-selected]::after {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+  }
+
+  .select-item[data-disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ---------- tag ---------- */
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 20px;
+    padding: 0 8px;
+    background: var(--surface-2);
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 16px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .tag-accent {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .tag-danger {
+    background: var(--danger-surface-strong);
+    color: var(--danger);
+  }
+
+  /* A lit pixel that blinks in whole frames. */
+  .tag-live::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    animation: pixel-blink 1.6s steps(1, end) infinite;
+  }
+
+  /* ---------- rows ---------- */
+
+  /* Lists stack on stepped surfaces, two pixels apart, instead of ruling
+     lines between entries. */
+  .rows {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .row {
+    position: relative;
+    display: block;
+    padding: 16px 20px;
+    background: var(--surface-1);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :is(a, button).row:hover {
+    background: var(--surface-2);
+  }
+
+  /* A dithered marker on the leading edge of the row under the pointer. */
+  :is(a, button).row:is(:hover, :focus-visible)::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--accent);
+    mask: var(--dither-50);
+  }
+
+  :is(a, button).row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ---------- panel ---------- */
+
+  .panel {
+    background: var(--surface-1);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.04),
+      var(--lift-2);
+  }
+}
+
+@keyframes pixel-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Four frames of a square chasing round a 2x2 block. */
+@keyframes pixel-spin {
+  0% {
+    translate: 0 0;
+  }
+  25% {
+    translate: 100% 0;
+  }
+  50% {
+    translate: 100% 100%;
+  }
+  75% {
+    translate: 0 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag-live::before {
+    animation: none;
+  }
+
+  .btn,
+  .select-list::before,
+  .select-list::after {
+    transition: none;
+  }
+}

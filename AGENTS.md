@@ -56,8 +56,8 @@ public/            # Static assets
 ```
 
 - **Path alias**: `~/*` maps to `./src/*` (configured in `tsconfig.json` `paths`). Use this for all internal imports.
-- **Layout**: `RootLayout` wraps all pages with DM Sans and Departure Mono fonts and the `PageLoader` component.
-- **PageLoader** (`src/components/page-loader.tsx`): A client component that renders an animated grid overlay (GSAP) on page load, then reveals content.
+- **Layout**: `RootLayout` wraps all pages with DM Sans and Departure Mono fonts, the navbars, and the footer.
+- **Design system**: tokens live in `src/app/globals.css`; dither patterns, pixel type, and component classes (`btn`, `field`, `tag`, `rows`, `dither-frame`, `rule`) live in `src/app/design-system.css`. `/admin/design-system` shows every token and component; add new ones there. The look is dark only, square-cornered, and built from dither. State changes are instant and animations use `steps()`; the only eased motion is a raised button lifting and pressing and a select's highlight bar sliding between items.
 
 ## UI Components
 
@@ -67,7 +67,7 @@ Install all new UI components from **COSS UI** (`https://coss.com/ui`) instead o
 
 - **Styling**: Tailwind CSS v4 classes. No `tailwind.config` — use `@theme inline {}` blocks in CSS for custom theme tokens (see `globals.css`).
 - **Class merging**: Use `cn()` from `~/lib/util` (clsx + tailwind-merge) for conditional/merged class names.
-- **Imports**: Use `~/` path alias for internal imports (e.g., `~/lib/util`, `~/components/page-loader`).
+- **Imports**: Use `~/` path alias for internal imports (e.g., `~/lib/util`, `~/components/navbar`).
 - **Formatting**: 2-space indentation (Biome enforced). Biome auto-organizes imports.
 - **GSAP**: Registered via `gsap.registerPlugin(useGSAP)` in components that use `@gsap/react`. Always register before use.
 

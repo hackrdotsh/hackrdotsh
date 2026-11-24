@@ -17,6 +17,7 @@ const adminLinks = [
   { href: "/admin/cover-letters", label: "letters" },
   { href: "/admin/job-postings", label: "jobs" },
   { href: "/admin/vouches", label: "vouches" },
+  { href: "/admin/design-system", label: "system" },
 ];
 
 export function AdminNavbar() {

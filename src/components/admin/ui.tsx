@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { Tag } from "~/components/ui/tag";
 import { cn } from "~/lib/util";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -80,21 +80,7 @@ export function Pill({
   tone?: "accent" | "muted" | "live";
   children: React.ReactNode;
 }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[0.625rem] tracking-wider lowercase",
-        tone === "live" && "border-accent/40 text-accent",
-        tone === "accent" && "border-accent/40 text-accent",
-        tone === "muted" && "border-border text-muted-foreground",
-      )}
-    >
-      {tone === "live" && (
-        <span className="inline-block size-1 animate-pulse rounded-full bg-accent" />
-      )}
-      {children}
-    </span>
-  );
+  return <Tag tone={tone}>{children}</Tag>;
 }
 
 export function EmptyState({ children }: { children: React.ReactNode }) {
@@ -140,24 +126,6 @@ export function SaveBar({
         </span>
         {children}
       </div>
-    </div>
-  );
-}
-
-export function AdminSelect({
-  className,
-  children,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <div className={cn("relative", className)}>
-      <select
-        {...props}
-        className="w-full appearance-none rounded-md border hairline bg-transparent px-3 py-2.5 font-sans text-sm text-foreground transition-colors focus:border-accent/50 focus:outline-none"
-      >
-        {children}
-      </select>
-      <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
     </div>
   );
 }

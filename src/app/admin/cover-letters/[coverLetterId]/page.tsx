@@ -4,10 +4,10 @@ import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Save, Sparkles, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { JobPostingSelect } from "~/components/admin/job-posting-select";
 import {
   AdminPageHeader,
   AdminSection,
-  AdminSelect,
   AdminShell,
   SaveBar,
 } from "~/components/admin/ui";
@@ -167,22 +167,14 @@ export default function EditCoverLetterPage() {
           </Button>
         }
       >
-        <AdminSelect
-          value={selectedJobPosting ?? ""}
-          onChange={(e) => {
-            setSelectedJobPosting(
-              (e.target.value || null) as Id<"jobPostings"> | null,
-            );
+        <JobPostingSelect
+          jobPostings={jobPostings}
+          value={selectedJobPosting}
+          onChange={(next) => {
+            setSelectedJobPosting(next);
             setDirty(true);
           }}
-        >
-          <option value="">none</option>
-          {jobPostings?.map((posting) => (
-            <option key={posting._id} value={posting._id}>
-              {posting.title || "untitled"} — {posting.company}
-            </option>
-          ))}
-        </AdminSelect>
+        />
       </AdminSection>
 
       <AdminSection index="02" title="content">
