@@ -29,12 +29,12 @@ export const DownloadCoverLetterButton = ({
     <Button
       onClick={handleClick}
       aria-label="Download cover letter as PDF"
-      variant="ghost"
-      size="icon-lg"
-      className="size-10"
+      variant="secondary"
+      size="sm"
       disabled={!content}
     >
-      <FileDown className="size-6" />
+      <FileDown />
+      PDF
     </Button>
   );
 };

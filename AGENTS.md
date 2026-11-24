@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal portfolio/site built with **vinext** (Next.js 16 App Router API on Vite, deployed to Cloudflare Workers), **React 19**, **Tailwind CSS v4**, and **GSAP** for animations. Auth is **Better Auth** (passkey-only) backed by a locally-installed Convex component. Managed via **pnpm** with a **Nix flake** dev shell.
+Personal portfolio/site built with **vinext** (Next.js 16 App Router API on Vite, deployed to Cloudflare Workers), **React 19**, and **Tailwind CSS v4**. Auth is **Better Auth** (passkey-only) backed by a locally-installed Convex component. Managed via **pnpm** with a **Nix flake** dev shell.
 
 ## Essential Commands
 
@@ -69,7 +69,6 @@ Install all new UI components from **COSS UI** (`https://coss.com/ui`) instead o
 - **Class merging**: Use `cn()` from `~/lib/util` (clsx + tailwind-merge) for conditional/merged class names.
 - **Imports**: Use `~/` path alias for internal imports (e.g., `~/lib/util`, `~/components/navbar`).
 - **Formatting**: 2-space indentation (Biome enforced). Biome auto-organizes imports.
-- **GSAP**: Registered via `gsap.registerPlugin(useGSAP)` in components that use `@gsap/react`. Always register before use.
 
 ## Gotchas
 

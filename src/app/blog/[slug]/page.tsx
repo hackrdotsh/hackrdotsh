@@ -2,7 +2,8 @@ import { ArrowLeft } from "lucide-react";
 import { marked } from "marked";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageHeader } from "~/components/page-header";
+import { PageShell } from "~/components/page-shell";
+import { Button } from "~/components/ui/button";
 import { getAllSlugs, getPostBySlug } from "~/lib/blog";
 import { generatePageMetadata } from "~/lib/metadata";
 
@@ -43,34 +44,35 @@ export default async function BlogPost({ params }: PageProps) {
   const html = await marked(post.content);
 
   return (
-    <main id="main-content" tabIndex={-1}>
-      <article className="mx-auto max-w-3xl px-5 pt-36 pb-24 sm:px-8 sm:pt-44">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground transition-colors hover:text-accent"
+    <PageShell className="max-w-3xl">
+      <article>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-2.5"
+          render={<Link href="/blog" />}
         >
-          <ArrowLeft className="size-3.5" />
-          all posts
-        </Link>
+          <ArrowLeft />
+          All posts
+        </Button>
 
-        <header className="mt-10 mb-12 border-b hairline pb-12">
-          <PageHeader eyebrow="writing" title={post.meta.title} />
+        <header className="mt-8">
+          <h1 className="pixel-33 text-balance text-foreground">
+            {post.meta.title}
+          </h1>
           <time
             dateTime={post.meta.date}
-            className="mt-6 block font-mono text-xs text-muted-foreground"
+            className="pixel-11 mt-4 block text-faint"
           >
-            {new Date(post.meta.date).toLocaleDateString("en-CA", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+            {new Date(post.meta.date).toLocaleDateString("en-CA")}
           </time>
         </header>
+        <hr className="rule my-10" />
         <div
           className="blog-prose max-w-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </article>
-    </main>
+    </PageShell>
   );
 }

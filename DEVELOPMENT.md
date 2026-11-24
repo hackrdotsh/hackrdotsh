@@ -1,13 +1,12 @@
 # hackr.sh
 
-Personal portfolio built with Next.js, React, Tailwind CSS, and GSAP.
+Personal portfolio built with Next.js, React, and Tailwind CSS.
 
 ## Stack
 
 - **Next.js** — App Router
 - **React**
 - **Tailwind CSS** — CSS-first config via `@theme inline`
-- **GSAP** — animations
 - **Biome** — linting and formatting
 - **Nix** — dev shell via `flake.nix`
 - **pnpm** — package management

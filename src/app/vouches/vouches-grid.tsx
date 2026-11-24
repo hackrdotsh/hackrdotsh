@@ -2,8 +2,6 @@
 
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
-import { DitherHover } from "~/components/dither-hover";
-import { Reveal } from "~/components/reveal";
 import { api } from "../../../convex/_generated/api";
 
 function safeHostname(url: string): string | null {
@@ -32,13 +30,7 @@ function FaviconImg({ url }: { url: string }) {
 
   return (
     // biome-ignore lint/performance/noImgElement: external favicon URLs can't use next/image
-    <img
-      src={src}
-      alt=""
-      width={20}
-      height={20}
-      className="shrink-0 rounded-sm"
-    />
+    <img src={src} alt="" width={20} height={20} className="shrink-0" />
   );
 }
 
@@ -46,52 +38,45 @@ export function VouchesGrid() {
   const vouches = useQuery(api.vouches.list);
 
   if (vouches === undefined) {
-    return (
-      <p className="mt-16 font-mono text-xs text-muted-foreground">
-        loading...
-      </p>
-    );
+    return <p className="mt-12 text-sm text-muted-foreground">Loading…</p>;
   }
 
   if (vouches.length === 0) {
     return (
-      <p className="mt-16 font-mono text-xs text-muted-foreground">
-        no vouches yet.
-      </p>
+      <p className="mt-12 text-sm text-muted-foreground">No vouches yet.</p>
     );
   }
 
   return (
-    <Reveal className="mt-16 sm:mt-20">
-      <div className="grid grid-cols-1 gap-px border hairline bg-border sm:grid-cols-2">
-        {vouches.map((vouch) => {
-          const href = safeUrl(vouch.url);
-          if (!href) return null;
-          return (
+    <ul className="rows mt-12 sm:grid-cols-2">
+      {vouches.map((vouch) => {
+        const href = safeUrl(vouch.url);
+        if (!href) return null;
+        return (
+          <li key={vouch._id}>
             <a
-              key={vouch._id}
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="reveal-item group relative block bg-background px-6 py-6 transition-colors duration-300 hover:bg-foreground/[0.03]"
+              className="row flex h-full items-center gap-4"
             >
-              <DitherHover />
-              <div className="relative flex items-center gap-4">
-                <FaviconImg url={vouch.url} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-sans text-sm font-medium text-foreground transition-colors group-hover:text-accent">
-                    {vouch.name}
-                  </p>
-                  <p className="truncate font-mono text-xs text-muted-foreground">
-                    {safeHostname(vouch.url) ?? vouch.url}
-                  </p>
-                </div>
-                <ArrowUpRight className="size-4 shrink-0 text-muted-foreground/40 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
-              </div>
+              <FaviconImg url={vouch.url} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium text-foreground">
+                  {vouch.name}
+                </span>
+                <span className="pixel-11 block truncate text-faint">
+                  {safeHostname(vouch.url) ?? vouch.url}
+                </span>
+              </span>
+              <ArrowUpRight
+                aria-hidden="true"
+                className="size-4 shrink-0 text-faint"
+              />
             </a>
-          );
-        })}
-      </div>
-    </Reveal>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

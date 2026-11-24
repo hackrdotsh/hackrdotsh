@@ -105,10 +105,7 @@ export function CommitGraph() {
   const offsetX = Math.floor((size.w - gridW) / 2);
 
   return (
-    <div
-      ref={ref}
-      className="absolute inset-x-0 top-16 bottom-0 overflow-hidden"
-    >
+    <div ref={ref} className="absolute inset-0 overflow-hidden">
       {cells.length > 0 && size.w > 0 && size.h > 0 && (
         <svg
           width={gridW}

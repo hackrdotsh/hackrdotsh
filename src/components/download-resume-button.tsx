@@ -34,11 +34,11 @@ export const DownloadResumeButton = ({
     <Button
       onClick={handleClick}
       aria-label="Download resume as PDF"
-      variant="ghost"
-      size="icon-lg"
-      className="size-10"
+      variant="secondary"
+      size="sm"
     >
-      <FileDown className="size-6" />
+      <FileDown />
+      PDF
     </Button>
   );
 };

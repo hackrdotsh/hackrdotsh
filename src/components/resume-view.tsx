@@ -1,127 +1,110 @@
-"use client";
-
-import { Reveal } from "~/components/reveal";
-import { ScrambleText } from "~/components/scramble-text";
+import { Band } from "~/components/band";
+import { Tag } from "~/components/ui/tag";
 import type { ResumeData } from "~/lib/resume";
-import { cn } from "~/lib/util";
 
-function SectionHeading({ index, title }: { index: string; title: string }) {
+function groupSkills(skills: ResumeData["skills"]) {
+  const groups: Record<string, ResumeData["skills"]> = {};
+  for (const skill of skills) {
+    groups[skill.category] ??= [];
+    groups[skill.category].push(skill);
+  }
+  return Object.entries(groups);
+}
+
+function Experience({
+  experience,
+}: {
+  experience: ResumeData["experiences"][number];
+}) {
+  const { description } = experience;
   return (
-    <div className="reveal-item flex items-baseline gap-4">
-      <span className="font-mono text-xs text-accent">{index}</span>
-      <h2 className="font-sans text-xl font-semibold tracking-tight text-foreground">
-        <ScrambleText text={title} trigger="view" />
-      </h2>
-      <span className="h-px flex-1 bg-border" aria-hidden="true" />
-    </div>
+    <li className="row">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+        <h3 className="font-semibold text-foreground">
+          {experience.title}
+          <span className="text-accent"> @ </span>
+          {experience.company}
+        </h3>
+        <p className="pixel-11 shrink-0 text-faint">
+          {experience.years.start} — {experience.years.end}
+        </p>
+      </div>
+      <div className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        {typeof description === "string" ? (
+          <p>{description}</p>
+        ) : (
+          <ul className="grid gap-2">
+            {description.map((item) => (
+              <li key={item.slice(0, 32)} className="flex gap-3">
+                <span
+                  aria-hidden="true"
+                  className="mt-[0.55em] size-1 shrink-0 bg-accent"
+                />
+                {item}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </li>
   );
 }
 
 export function ResumeView({ data }: { data: ResumeData }) {
-  const skillsByCategory = data.skills.reduce<
-    Record<string, { name: string; isExpert: boolean }[]>
-  >((acc, skill) => {
-    if (!acc[skill.category]) acc[skill.category] = [];
-    acc[skill.category].push({ name: skill.name, isExpert: skill.isExpert });
-    return acc;
-  }, {});
-
   return (
-    <Reveal className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
-      {/* profile */}
-      <section>
-        <SectionHeading index="01" title="profile" />
-        <p className="reveal-item mt-8 max-w-2xl text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-base">
+    <div>
+      <Band title="Profile">
+        <p className="max-w-2xl leading-relaxed text-muted-foreground">
           {data.profile}
         </p>
-      </section>
+      </Band>
 
-      {/* experience */}
-      <section>
-        <SectionHeading index="02" title="experience" />
-        <div className="mt-8">
-          {data.experiences.map((exp) => (
-            <div
-              key={`${exp.company}-${exp.years.start}`}
-              className="reveal-item border-t hairline py-8 last:border-b sm:py-10"
-            >
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                <h3 className="font-sans text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-                  {exp.title}
-                  <span className="text-accent"> @ </span>
-                  {exp.company}
-                </h3>
-                <p className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
-                  {exp.years.start} — {exp.years.end}
-                </p>
-              </div>
-              <div className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                {typeof exp.description === "string" ? (
-                  <p>{exp.description}</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {exp.description.map((item) => (
-                      <li key={item.slice(0, 32)} className="flex gap-3">
-                        <span
-                          className="mt-[0.55em] size-1 shrink-0 bg-accent"
-                          aria-hidden="true"
-                        />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
+      <Band title="Experience">
+        <ul className="rows">
+          {data.experiences.map((experience) => (
+            <Experience
+              key={`${experience.company}-${experience.years.start}`}
+              experience={experience}
+            />
           ))}
-        </div>
-      </section>
+        </ul>
+      </Band>
 
-      {/* skills */}
-      <section>
-        <SectionHeading index="03" title="skills" />
-        <div className="mt-8 space-y-8">
-          {Object.entries(skillsByCategory).map(([category, skills]) => (
-            <div key={category} className="reveal-item">
-              <h3 className="label">{category}</h3>
-              <div className="mt-3 flex flex-wrap gap-2">
+      <Band title="Skills">
+        <div className="grid gap-8">
+          {groupSkills(data.skills).map(([category, skills]) => (
+            <div key={category}>
+              <h3 className="pixel-11 text-muted-foreground uppercase">
+                {category}
+              </h3>
+              <ul className="mt-3 flex flex-wrap gap-2">
                 {skills.map((skill) => (
-                  <span
-                    key={skill.name}
-                    className={cn(
-                      "rounded-full border px-3 py-1 font-mono text-xs transition-colors",
-                      skill.isExpert
-                        ? "border-accent/40 text-accent"
-                        : "border-border text-muted-foreground",
-                    )}
-                  >
-                    {skill.name}
-                  </span>
+                  <li key={skill.name}>
+                    <Tag tone={skill.isExpert ? "accent" : "muted"}>
+                      {skill.name}
+                    </Tag>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           ))}
         </div>
-      </section>
+      </Band>
 
-      {/* education */}
       {data.education && (
-        <section>
-          <SectionHeading index="04" title="education" />
-          <div className="reveal-item mt-8">
-            <h3 className="font-sans text-lg font-semibold tracking-tight text-foreground">
-              {data.education.degreeName}
-            </h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {data.education.universityName}
-            </p>
-            <p className="mt-1.5 font-mono text-xs text-muted-foreground/70">
-              {data.education.progression}
-              {data.education.gpa ? ` · gpa: ${data.education.gpa}` : ""}
-            </p>
-          </div>
-        </section>
+        <Band title="Education">
+          <h3 className="font-semibold text-foreground">
+            {data.education.degreeName}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {data.education.universityName}
+          </p>
+          <p className="pixel-11 mt-2 text-faint">
+            {data.education.progression}
+            {data.education.gpa ? ` · GPA ${data.education.gpa}` : ""}
+          </p>
+        </Band>
       )}
-    </Reveal>
+    </div>
   );
 }

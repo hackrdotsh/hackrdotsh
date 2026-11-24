@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { AdminNavbar } from "~/components/admin-navbar";
 import { Footer } from "~/components/footer";
 import { Navbar } from "~/components/navbar";
 import { Providers } from "~/components/providers";
 import "./globals.css";
-import { AmbientBackground } from "~/components/ambient-background";
 import { getToken } from "~/lib/auth-server";
 
 const siteUrl = "https://hackr.sh";
@@ -103,11 +101,9 @@ export default async function RootLayout({
       </head>
       <body className="antialiased">
         <Providers initialToken={token}>
-          <AmbientBackground />
-          <Navbar />
-          <AdminNavbar />
           <div className="flex min-h-svh flex-col">
-            <main className="relative z-10 flex-1">{children}</main>
+            <Navbar />
+            <div className="flex-1">{children}</div>
             <Footer />
           </div>
         </Providers>

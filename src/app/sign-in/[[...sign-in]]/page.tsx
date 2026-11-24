@@ -3,6 +3,8 @@
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { authClient } from "~/lib/auth-client";
 import { api } from "../../../../convex/_generated/api";
 
@@ -21,7 +23,7 @@ export default function SignInPage() {
     const { error } = await authClient.signIn.passkey();
     setLoading(false);
     if (error) {
-      setError(error.message ?? "sign in failed");
+      setError(error.message ?? "Sign in failed");
       return;
     }
     const params = new URLSearchParams(window.location.search);
@@ -49,7 +51,7 @@ export default function SignInPage() {
     });
     setLoading(false);
     if (error) {
-      setError(error.message ?? "passkey registration failed");
+      setError(error.message ?? "Passkey registration failed");
       return;
     }
     setSetupDone(true);
@@ -57,61 +59,65 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="flex w-full max-w-xs flex-col gap-5">
-        <h1 className="font-mono text-xl text-foreground">sign in</h1>
-        {setupDone ? (
-          <p className="font-mono text-xs text-muted-foreground">
-            passkey registered. you can sign in now.
-          </p>
-        ) : null}
-        {error && <p className="font-mono text-xs text-red-400">{error}</p>}
-        <button
-          type="button"
-          disabled={loading}
-          onClick={handleSignIn}
-          className="link-sweep cursor-pointer border hairline px-3 py-2 font-mono text-sm text-foreground transition-colors hover:bg-foreground/5 disabled:opacity-50"
-        >
-          {loading ? "waiting for passkey..." : "sign in with passkey"}
-        </button>
-        {hasPasskeys === false && (
-          <>
-            <button
-              type="button"
-              onClick={() => setSetupOpen((v) => !v)}
-              className="self-start font-mono text-xs text-foreground/40 underline decoration-foreground/20 underline-offset-4 transition-colors hover:text-foreground/70"
-            >
-              {setupOpen ? "close setup" : "first-time setup"}
-            </button>
-            {setupOpen && (
-              <div className="flex flex-col gap-3">
-                <label
-                  htmlFor="setup-token"
-                  className="font-mono text-xs text-muted-foreground"
-                >
-                  setup token
-                </label>
-                <input
-                  id="setup-token"
-                  type="password"
-                  autoComplete="off"
-                  value={setupToken}
-                  onChange={(e) => setSetupToken(e.target.value)}
-                  className="border hairline bg-input/50 px-3 py-2 font-mono text-sm text-foreground outline-none transition-colors focus:border-foreground/40"
-                />
-                <button
-                  type="button"
+    <main
+      id="main-content"
+      className="mx-auto grid w-full max-w-xs gap-6 px-5 py-24"
+    >
+      <h1 className="pixel-33 text-foreground">Sign in</h1>
+      {setupDone && (
+        <p className="text-sm text-muted-foreground">
+          Passkey registered. You can sign in now.
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-danger">
+          {error}
+        </p>
+      )}
+      <div className="pr-2 pb-2">
+        <Button onClick={handleSignIn} loading={loading} className="w-full">
+          Sign in with passkey
+        </Button>
+      </div>
+      {hasPasskeys === false && (
+        <>
+          <Button
+            variant="link"
+            className="justify-self-start"
+            onClick={() => setSetupOpen((open) => !open)}
+            aria-expanded={setupOpen}
+          >
+            First-time setup
+          </Button>
+          {setupOpen && (
+            <div className="grid gap-3">
+              <label
+                htmlFor="setup-token"
+                className="pixel-11 text-muted-foreground uppercase"
+              >
+                Setup token
+              </label>
+              <Input
+                id="setup-token"
+                type="password"
+                autoComplete="off"
+                value={setupToken}
+                onChange={(e) => setSetupToken(e.target.value)}
+              />
+              <div className="pt-1 pr-2 pb-2">
+                <Button
+                  variant="secondary"
                   disabled={loading || !setupToken}
                   onClick={handleRegister}
-                  className="link-sweep cursor-pointer border hairline px-3 py-2 font-mono text-sm text-foreground transition-colors hover:bg-foreground/5 disabled:opacity-50"
+                  className="w-full"
                 >
-                  register passkey
-                </button>
+                  Register passkey
+                </Button>
               </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+            </div>
+          )}
+        </>
+      )}
+    </main>
   );
 }
