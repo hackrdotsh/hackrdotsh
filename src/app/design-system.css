@@ -605,6 +605,37 @@
     outline-offset: 2px;
   }
 
+  /* A row whose whole surface links somewhere, while still holding other
+     controls: the link is stretched over the row and the controls sit above
+     it with .row-control. */
+  .row-cover {
+    position: absolute;
+    inset: 0;
+  }
+
+  .row:has(> .row-cover:hover) {
+    background: var(--surface-2);
+  }
+
+  .row:has(> .row-cover:is(:hover, :focus-visible))::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--accent);
+    mask: var(--dither-50);
+  }
+
+  .row-cover:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .row-control {
+    position: relative;
+    z-index: 1;
+  }
+
   /* ---------- panel ---------- */
 
   .panel {

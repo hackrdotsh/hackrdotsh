@@ -7,9 +7,8 @@ import {
   AdminPageHeader,
   AdminSection,
   AdminShell,
-  EmptyState,
+  Field,
 } from "~/components/admin/ui";
-import { Reveal } from "~/components/reveal";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "../../../../convex/_generated/api";
@@ -65,144 +64,134 @@ export default function AdminVouchesPage() {
     await removeVouch({ id });
   };
 
+  const editKeys = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") handleUpdate();
+    if (event.key === "Escape") cancelEditing();
+  };
+
   return (
     <AdminShell>
-      <AdminPageHeader eyebrow="admin / vouches" title="Vouches" />
+      <AdminPageHeader title="Vouches" />
 
-      <AdminSection index="01" title="add a vouch">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Input
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Input
-            placeholder="https://example.com"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCreate();
-            }}
-          />
-          <Button
-            onClick={handleCreate}
-            variant="outline"
-            size="icon"
-            aria-label="Add vouch"
-            disabled={!name.trim() || !url.trim()}
-          >
-            <Plus className="size-4" />
-          </Button>
+      <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+        <AdminSection title="Add a vouch">
+          <div className="grid gap-4">
+            <Field label="Name">
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </Field>
+            <Field label="Link">
+              <Input
+                placeholder="https://example.com"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreate();
+                }}
+              />
+            </Field>
+            <div className="pt-1 pr-2 pb-2">
+              <Button
+                onClick={handleCreate}
+                disabled={!name.trim() || !url.trim()}
+              >
+                <Plus />
+                Add vouch
+              </Button>
+            </div>
+          </div>
+        </AdminSection>
+
+        <div className="min-w-0">
+          {vouches === undefined && (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          )}
+
+          {vouches && vouches.length === 0 && (
+            <p className="bg-surface-1 px-6 py-14 text-center text-sm text-muted-foreground">
+              No vouches yet.
+            </p>
+          )}
+
+          {vouches && vouches.length > 0 && (
+            <ul className="rows 2xl:grid-cols-2">
+              {vouches.map((vouch) =>
+                editingId === vouch._id ? (
+                  <li
+                    key={vouch._id}
+                    className="row flex flex-col gap-2 sm:flex-row sm:items-center"
+                  >
+                    <Input
+                      aria-label="Name"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={editKeys}
+                    />
+                    <Input
+                      aria-label="Link"
+                      value={editUrl}
+                      onChange={(e) => setEditUrl(e.target.value)}
+                      onKeyDown={editKeys}
+                    />
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleUpdate}
+                        aria-label="Save"
+                        disabled={!editName.trim() || !editUrl.trim()}
+                      >
+                        <Check />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={cancelEditing}
+                        aria-label="Cancel"
+                      >
+                        <X />
+                      </Button>
+                    </div>
+                  </li>
+                ) : (
+                  <li key={vouch._id} className="row flex items-center gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-foreground">
+                        {vouch.name}
+                      </p>
+                      <a
+                        href={vouch.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pixel-11 block truncate text-faint hover:text-foreground"
+                      >
+                        {vouch.url}
+                      </a>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => startEditing(vouch)}
+                        aria-label={`Edit ${vouch.name}`}
+                      >
+                        <Pencil />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemove(vouch._id)}
+                        aria-label={`Remove ${vouch.name}`}
+                      >
+                        <Trash2 className="text-danger" />
+                      </Button>
+                    </div>
+                  </li>
+                ),
+              )}
+            </ul>
+          )}
         </div>
-      </AdminSection>
-
-      <AdminSection index="02" title="all vouches">
-        {vouches === undefined && (
-          <p className="font-mono text-xs text-muted-foreground lowercase">
-            loading...
-          </p>
-        )}
-
-        {vouches && vouches.length === 0 && (
-          <EmptyState>no vouches yet — add one above.</EmptyState>
-        )}
-
-        {vouches && vouches.length > 0 && (
-          <Reveal>
-            {vouches.map((vouch, i) => {
-              const isEditing = editingId === vouch._id;
-
-              return (
-                <div
-                  key={vouch._id}
-                  className="reveal-item border-t hairline py-4 last:border-b"
-                >
-                  {isEditing ? (
-                    <div className="flex flex-1 flex-col gap-2 sm:flex-row">
-                      <Input
-                        size="sm"
-                        placeholder="Name"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleUpdate();
-                          if (e.key === "Escape") cancelEditing();
-                        }}
-                      />
-                      <Input
-                        size="sm"
-                        placeholder="https://example.com"
-                        value={editUrl}
-                        onChange={(e) => setEditUrl(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleUpdate();
-                          if (e.key === "Escape") cancelEditing();
-                        }}
-                      />
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={handleUpdate}
-                          aria-label="Save"
-                          disabled={!editName.trim() || !editUrl.trim()}
-                        >
-                          <Check className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={cancelEditing}
-                          aria-label="Cancel"
-                        >
-                          <X className="size-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-5">
-                      <span className="font-mono text-xs text-muted-foreground/60">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-sans text-sm font-medium text-foreground">
-                          {vouch.name}
-                        </p>
-                        <a
-                          href={vouch.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block truncate font-mono text-xs text-muted-foreground transition-colors hover:text-accent"
-                        >
-                          {vouch.url}
-                        </a>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => startEditing(vouch)}
-                          aria-label={`Edit ${vouch.name}`}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleRemove(vouch._id)}
-                          aria-label={`Remove ${vouch.name}`}
-                        >
-                          <Trash2 className="size-4 text-destructive-foreground" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </Reveal>
-        )}
-      </AdminSection>
+      </div>
     </AdminShell>
   );
 }

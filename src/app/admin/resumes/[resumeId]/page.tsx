@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery } from "convex/react";
 import {
-  ArrowLeft,
   ChevronDown,
   ChevronUp,
   Plus,
@@ -19,16 +18,16 @@ import {
   AdminPageHeader,
   AdminSection,
   AdminShell,
-  FieldLabel,
+  Field,
   Pill,
   SaveBar,
+  StatusText,
 } from "~/components/admin/ui";
 import { DownloadResumeButton } from "~/components/download-resume-button";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogPanel,
@@ -50,42 +49,37 @@ const blankResume: ResumeData = {
   education: null,
 };
 
-function AddButton({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-24 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed hairline font-mono text-xs text-muted-foreground transition-colors hover:border-accent/40 hover:text-accent"
-    >
-      <Plus className="size-3.5" />
-      {children}
-    </button>
-  );
+type Experience = ResumeData["experiences"][number];
+
+function parseEndYear(value: string): Experience["years"]["end"] {
+  return value === "Present" ? "Present" : Number(value) || 0;
 }
+
+function splitBullets(value: string) {
+  return value.split("\n").filter((line) => line.trim() !== "");
+}
+
+/** A nested block inside a section panel. It steps down to the page colour
+    so the fields inside it stay visible. */
+const insetClass = "grid gap-4 bg-background p-4";
 
 function ExperienceEditor({
   experience,
   index,
+  count,
   onChange,
+  onMove,
   onRemove,
 }: {
-  experience: ResumeData["experiences"][number];
+  experience: Experience;
   index: number;
-  onChange: (index: number, updated: ResumeData["experiences"][number]) => void;
+  count: number;
+  onChange: (index: number, updated: Experience) => void;
+  onMove: (index: number, direction: "up" | "down") => void;
   onRemove: (index: number) => void;
 }) {
   const [startYear, setStartYear] = useState(String(experience.years.start));
-  const [endYear, setEndYear] = useState(
-    experience.years.end === "Present"
-      ? "Present"
-      : String(experience.years.end),
-  );
+  const [endYear, setEndYear] = useState(String(experience.years.end));
   const [address, setAddress] = useState(experience.address ?? "");
   const [title, setTitle] = useState(experience.title);
   const [company, setCompany] = useState(experience.company);
@@ -95,118 +89,128 @@ function ExperienceEditor({
       : experience.description,
   );
 
-  const update = (field: Partial<ResumeData["experiences"][number]>) => {
-    const start = field.years?.start ?? (Number(startYear) || 0);
-    const end =
-      endYear === "Present" ? ("Present" as const) : Number(endYear) || 0;
+  const update = (field: Partial<Experience>) => {
     onChange(index, {
       ...experience,
-      years: { start, end },
+      years: { start: Number(startYear) || 0, end: parseEndYear(endYear) },
       address: address || undefined,
       title,
       company,
-      description: description.split("\n").filter((line) => line.trim() !== ""),
+      description: splitBullets(description),
       ...field,
     });
   };
 
   return (
-    <div className="relative space-y-5 rounded-md border hairline p-5">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => onRemove(index)}
-        aria-label="Remove experience"
-        className="absolute top-3 right-3 text-muted-foreground hover:text-destructive-foreground"
-      >
-        <X className="size-4" />
-      </Button>
-
-      <div className="flex flex-wrap items-center gap-2 pr-10">
-        <div className="w-20">
-          <Input
-            min={1997}
-            max={2100}
-            value={startYear}
-            onChange={(e) => {
-              setStartYear(e.target.value);
-              update({
-                years: {
-                  start: Number(e.target.value) || 0,
-                  end: endYear === "Present" ? "Present" : Number(endYear) || 0,
-                },
-              });
-            }}
-            placeholder={`${new Date().getFullYear()}`}
-          />
-        </div>
-        <span className="font-mono text-xs text-muted-foreground">—</span>
-        <div className="w-24">
-          <Input
-            value={endYear}
-            onChange={(e) => {
-              setEndYear(e.target.value);
-              const end =
-                e.target.value === "Present"
-                  ? "Present"
-                  : Number(e.target.value) || 0;
-              update({ years: { start: Number(startYear) || 0, end } });
-            }}
-            placeholder="Present"
-          />
-        </div>
-        <span className="font-mono text-xs text-muted-foreground">in</span>
-        <div className="min-w-32 flex-1">
-          <Input
-            value={address}
-            onChange={(e) => {
-              setAddress(e.target.value);
-              update({ address: e.target.value || undefined });
-            }}
-            placeholder="Calgary, AB"
-          />
+    <li className={insetClass}>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="pixel-11 text-muted-foreground uppercase">
+          Experience {index + 1}
+        </h3>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onMove(index, "up")}
+            disabled={index === 0}
+            aria-label="Move experience up"
+          >
+            <ChevronUp />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onMove(index, "down")}
+            disabled={index === count - 1}
+            aria-label="Move experience down"
+          >
+            <ChevronDown />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onRemove(index)}
+            aria-label="Remove experience"
+          >
+            <X className="text-danger" />
+          </Button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex-1">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Title">
           <Input
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
               update({ title: e.target.value });
             }}
-            placeholder="Software Developer"
           />
-        </div>
-        <span className="font-mono text-xs text-accent">@</span>
-        <div className="flex-1">
+        </Field>
+        <Field label="Company">
           <Input
             value={company}
             onChange={(e) => {
               setCompany(e.target.value);
               update({ company: e.target.value });
             }}
-            placeholder="Acme Inc."
           />
-        </div>
+        </Field>
       </div>
 
-      <Textarea
-        value={description}
-        onChange={(e) => {
-          setDescription(e.target.value);
-          update({
-            description: e.target.value
-              .split("\n")
-              .filter((line) => line.trim() !== ""),
-          });
-        }}
-        placeholder="Led development of... (one bullet per line)"
-        rows={7}
-      />
-    </div>
+      <div className="grid gap-4 sm:grid-cols-[6rem_6rem_minmax(0,1fr)]">
+        <Field label="Start">
+          <Input
+            inputMode="numeric"
+            value={startYear}
+            onChange={(e) => {
+              setStartYear(e.target.value);
+              update({
+                years: {
+                  start: Number(e.target.value) || 0,
+                  end: parseEndYear(endYear),
+                },
+              });
+            }}
+          />
+        </Field>
+        <Field label="End">
+          <Input
+            value={endYear}
+            onChange={(e) => {
+              setEndYear(e.target.value);
+              update({
+                years: {
+                  start: Number(startYear) || 0,
+                  end: parseEndYear(e.target.value),
+                },
+              });
+            }}
+            placeholder="Present"
+          />
+        </Field>
+        <Field label="Location (optional)">
+          <Input
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              update({ address: e.target.value || undefined });
+            }}
+          />
+        </Field>
+      </div>
+
+      <Field label="Bullets, one per line">
+        <Textarea
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            update({ description: splitBullets(e.target.value) });
+          }}
+          rows={7}
+        />
+      </Field>
+    </li>
   );
 }
 
@@ -220,9 +224,8 @@ function SkillEditor({
   const grouped = skills.reduce<
     Record<string, { name: string; isExpert: boolean; originalIndex: number }[]>
   >((acc, skill, index) => {
-    const key = skill.category;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push({
+    acc[skill.category] ??= [];
+    acc[skill.category].push({
       name: skill.name,
       isExpert: skill.isExpert,
       originalIndex: index,
@@ -233,25 +236,11 @@ function SkillEditor({
   const categories = Object.keys(grouped).sort();
 
   const updateSkill = (
-    category: string,
     originalIndex: number,
-    field: "name" | "isExpert",
-    value: string | boolean,
+    change: Partial<ResumeData["skills"][number]>,
   ) => {
     const updated = [...skills];
-    if (field === "isExpert") {
-      updated[originalIndex] = {
-        ...updated[originalIndex],
-        isExpert: value as boolean,
-        category,
-      };
-    } else {
-      updated[originalIndex] = {
-        ...updated[originalIndex],
-        [field]: value as string,
-        category,
-      };
-    }
+    updated[originalIndex] = { ...updated[originalIndex], ...change };
     onChange(updated);
   };
 
@@ -268,120 +257,112 @@ function SkillEditor({
 
   const addCategory = (name: string) => {
     if (!name.trim()) return;
-    onChange([...skills, { category: name.trim(), name: "", isExpert: false }]);
+    addSkill(name.trim());
     setCategoryDialogOpen(false);
   };
 
   return (
-    <div className="space-y-4">
-      {categories.map((category) => (
-        <div
-          key={category}
-          className="space-y-4 rounded-md border hairline p-5"
-        >
-          <div className="flex items-baseline gap-2">
-            <FieldLabel className="mb-0">{category}</FieldLabel>
-            <span className="font-mono text-xs text-muted-foreground/60">
-              ({grouped[category].length})
-            </span>
-          </div>
-          <div className="space-y-2">
-            {grouped[category].map((skill) => (
-              <div
-                key={skill.originalIndex}
-                className="flex items-center gap-2"
+    <div className="grid gap-4">
+      {categories.length > 0 && (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {categories.map((category) => (
+            <li key={category} className={cn(insetClass, "content-start")}>
+              <h3 className="pixel-11 text-muted-foreground uppercase">
+                {category} ({grouped[category].length})
+              </h3>
+              <ul className="grid gap-2">
+                {grouped[category].map((skill) => (
+                  <li
+                    key={skill.originalIndex}
+                    className="flex items-center gap-1"
+                  >
+                    <Input
+                      aria-label="Skill name"
+                      value={skill.name}
+                      onChange={(e) =>
+                        updateSkill(skill.originalIndex, {
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-pressed={skill.isExpert}
+                      aria-label="Expert"
+                      title="Expert"
+                      onClick={() =>
+                        updateSkill(skill.originalIndex, {
+                          isExpert: !skill.isExpert,
+                        })
+                      }
+                    >
+                      <Star
+                        className={cn(
+                          skill.isExpert
+                            ? "fill-accent text-accent"
+                            : "text-faint",
+                        )}
+                      />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeSkill(skill.originalIndex)}
+                      aria-label={`Remove ${skill.name || "skill"}`}
+                    >
+                      <X className="text-danger" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-self-start"
+                onClick={() => addSkill(category)}
               >
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateSkill(
-                      category,
-                      skill.originalIndex,
-                      "isExpert",
-                      !skill.isExpert,
-                    )
-                  }
-                  className="shrink-0 cursor-pointer text-muted-foreground transition-colors hover:text-accent"
-                  title="Expert"
-                >
-                  <Star
-                    className={cn(
-                      "size-3.5",
-                      skill.isExpert && "fill-accent text-accent",
-                    )}
-                  />
-                </button>
-                <Input
-                  value={skill.name}
-                  onChange={(e) =>
-                    updateSkill(
-                      category,
-                      skill.originalIndex,
-                      "name",
-                      e.target.value,
-                    )
-                  }
-                  placeholder="Skill name"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeSkill(skill.originalIndex)}
-                  aria-label={`Remove ${skill.name || "skill"}`}
-                  className="shrink-0 cursor-pointer text-muted-foreground transition-colors hover:text-destructive-foreground"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full font-mono text-xs text-muted-foreground"
-            onClick={() => addSkill(category)}
-          >
-            <Plus className="size-3.5" />
-            add
-          </Button>
-        </div>
-      ))}
+                <Plus />
+                Add skill
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <AddButton onClick={() => setCategoryDialogOpen(true)}>
-        add category
-      </AddButton>
+      <div className="pr-2 pb-2">
+        <Button variant="secondary" onClick={() => setCategoryDialogOpen(true)}>
+          <Plus />
+          Add category
+        </Button>
+      </div>
 
       <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
         <DialogPopup>
           <DialogHeader>
-            <DialogTitle className="lowercase">New category</DialogTitle>
-            <DialogDescription className="lowercase">
-              Enter a name for the skill category.
-            </DialogDescription>
+            <DialogTitle>New category</DialogTitle>
           </DialogHeader>
           <DialogPanel>
             <Input
               ref={categoryInputRef}
-              placeholder="e.g. Frameworks"
+              aria-label="Category name"
+              placeholder="Frameworks"
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  addCategory(e.currentTarget.value);
-                }
+                if (e.key === "Enter") addCategory(e.currentTarget.value);
               }}
             />
           </DialogPanel>
           <DialogFooter>
             <DialogClose render={<Button variant="ghost" />}>
-              cancel
+              Cancel
             </DialogClose>
             <Button
-              type="button"
-              variant="default"
               onClick={() => {
                 const input = categoryInputRef.current;
                 if (input) addCategory(input.value);
               }}
             >
-              add
+              Add category
             </Button>
           </DialogFooter>
         </DialogPopup>
@@ -397,82 +378,64 @@ function EducationEditor({
   education: ResumeData["education"];
   onChange: (education: ResumeData["education"]) => void;
 }) {
-  const [enabled, setEnabled] = useState(education !== null);
-
   const handleToggle = (checked: boolean) => {
-    if (checked) {
-      onChange({
-        universityName: "",
-        progression: "",
-        degreeName: "",
-        gpa: undefined,
-      });
-      setEnabled(true);
-    } else {
-      onChange(null);
-      setEnabled(false);
-    }
+    onChange(
+      checked
+        ? {
+            universityName: "",
+            progression: "",
+            degreeName: "",
+            gpa: undefined,
+          }
+        : null,
+    );
   };
 
   return (
-    <div className="space-y-5">
-      <span className="inline-flex items-center gap-3">
+    <div className="grid gap-4">
+      <span className="flex items-center gap-3 text-sm">
         <Switch
-          checked={enabled}
+          id="include-education"
+          checked={education !== null}
           onCheckedChange={handleToggle}
-          aria-label="Include education section"
         />
-        <span className="font-mono text-xs text-muted-foreground">
-          include education section
-        </span>
+        <label htmlFor="include-education">Include education</label>
       </span>
       {education && (
-        <div className="space-y-5 rounded-md border hairline p-5">
-          <div>
-            <FieldLabel>degree</FieldLabel>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Degree">
             <Input
               value={education.degreeName}
               onChange={(e) =>
                 onChange({ ...education, degreeName: e.target.value })
               }
-              placeholder="B.Sc. Computer Science"
             />
-          </div>
-          <div>
-            <FieldLabel>university</FieldLabel>
+          </Field>
+          <Field label="University">
             <Input
               value={education.universityName}
               onChange={(e) =>
                 onChange({ ...education, universityName: e.target.value })
               }
-              placeholder="University of..."
             />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <FieldLabel>progression</FieldLabel>
-              <Input
-                value={education.progression}
-                onChange={(e) =>
-                  onChange({ ...education, progression: e.target.value })
-                }
-                placeholder="2016 - 2020"
-              />
-            </div>
-            <div>
-              <FieldLabel>gpa (optional)</FieldLabel>
-              <Input
-                value={education.gpa ?? ""}
-                onChange={(e) =>
-                  onChange({
-                    ...education,
-                    gpa: e.target.value || undefined,
-                  })
-                }
-                placeholder="3.8/4.0"
-              />
-            </div>
-          </div>
+          </Field>
+          <Field label="Years">
+            <Input
+              value={education.progression}
+              onChange={(e) =>
+                onChange({ ...education, progression: e.target.value })
+              }
+              placeholder="2016 - 2020"
+            />
+          </Field>
+          <Field label="GPA (optional)">
+            <Input
+              value={education.gpa ?? ""}
+              onChange={(e) =>
+                onChange({ ...education, gpa: e.target.value || undefined })
+              }
+            />
+          </Field>
         </div>
       )}
     </div>
@@ -513,9 +476,7 @@ export default function EditResumePage() {
   if (resume === undefined) {
     return (
       <AdminShell>
-        <p className="font-mono text-xs text-muted-foreground lowercase">
-          loading...
-        </p>
+        <StatusText>Loading…</StatusText>
       </AdminShell>
     );
   }
@@ -523,9 +484,7 @@ export default function EditResumePage() {
   if (resume === null) {
     return (
       <AdminShell>
-        <p className="font-mono text-xs text-muted-foreground lowercase">
-          resume not found.
-        </p>
+        <StatusText>Resume not found.</StatusText>
       </AdminShell>
     );
   }
@@ -604,178 +563,147 @@ export default function EditResumePage() {
     ? jobPostings?.find((j) => j._id === selectedJobPosting)
     : undefined;
 
+  const handleGenerate = async () => {
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/resumes/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobPostingId: selectedJobPosting ?? undefined,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      const data: ResumeData = await res.json();
+      setDraft(data);
+      setDirty(true);
+    } catch (err) {
+      console.error("Generation failed:", err);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const changeExperience = (index: number, updated: Experience) => {
+    setDraft((prev) => ({
+      ...prev,
+      experiences: prev.experiences.map((experience, i) =>
+        i === index ? updated : experience,
+      ),
+    }));
+    setDirty(true);
+  };
+
   return (
     <AdminShell>
       <AdminPageHeader
-        eyebrow="admin / resumes"
         title="Edit resume"
-        meta={new Date(resume.createdAt).toLocaleDateString("en-CA", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
+        meta={new Date(resume.createdAt).toLocaleDateString("en-CA")}
       >
-        {resume.isFrontFacing && <Pill tone="live">live</Pill>}
+        {resume.isFrontFacing && <Pill tone="live">Live</Pill>}
         <DownloadResumeButton
           data={draft}
           company={selectedJp?.company}
           position={selectedJp?.title}
         />
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => router.push("/admin/resumes")}
-          aria-label="Back to resumes"
-        >
-          <ArrowLeft className="size-4" />
+        <Button variant="destructive" size="sm" onClick={handleDelete}>
+          <Trash2 />
+          Delete
         </Button>
       </AdminPageHeader>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Button variant="destructive-outline" size="sm" onClick={handleDelete}>
-          <Trash2 className="size-3.5" />
-          delete
-        </Button>
-        <Button variant="ghost" size="sm" onClick={loadResume}>
-          discard changes
-        </Button>
+      <div className="mt-8 grid items-start gap-6 xl:grid-cols-2">
+        <div className="grid min-w-0 gap-6">
+          <AdminSection title="Job posting">
+            {resume.isFrontFacing ? (
+              <p className="text-sm text-muted-foreground">
+                The live resume can't be linked to a job posting.
+              </p>
+            ) : (
+              <div className="grid gap-4">
+                <JobPostingSelect
+                  jobPostings={jobPostings}
+                  value={selectedJobPosting}
+                  onChange={(next) => {
+                    setSelectedJobPosting(next);
+                    setDirty(true);
+                  }}
+                />
+                <div className="pr-2 pb-2">
+                  <Button
+                    variant="secondary"
+                    loading={generating}
+                    onClick={handleGenerate}
+                  >
+                    <Sparkles className="text-accent" />
+                    Generate resume
+                  </Button>
+                </div>
+              </div>
+            )}
+          </AdminSection>
+
+          <AdminSection title="Profile">
+            <Textarea
+              aria-label="Profile"
+              value={draft.profile}
+              onChange={(e) => updateField("profile", e.target.value)}
+              rows={4}
+            />
+          </AdminSection>
+
+          <AdminSection title="Skills">
+            <SkillEditor
+              skills={draft.skills}
+              onChange={(skills) => updateField("skills", skills)}
+            />
+          </AdminSection>
+
+          <AdminSection title="Education">
+            <EducationEditor
+              education={draft.education}
+              onChange={(education) => updateField("education", education)}
+            />
+          </AdminSection>
+        </div>
+
+        <AdminSection title="Experience">
+          <div className="grid gap-4">
+            {draft.experiences.length > 0 && (
+              <ul className="grid gap-2">
+                {draft.experiences.map((experience, index) => (
+                  <ExperienceEditor
+                    // biome-ignore lint/suspicious/noArrayIndexKey: editor rows have no stable id; state is positional
+                    key={index}
+                    experience={experience}
+                    index={index}
+                    count={draft.experiences.length}
+                    onChange={changeExperience}
+                    onMove={moveExperience}
+                    onRemove={removeExperience}
+                  />
+                ))}
+              </ul>
+            )}
+            <div className="pr-2 pb-2">
+              <Button variant="secondary" onClick={addExperience}>
+                <Plus />
+                Add experience
+              </Button>
+            </div>
+          </div>
+        </AdminSection>
       </div>
 
-      <AdminSection
-        index="01"
-        title="job posting"
-        actions={
-          !resume.isFrontFacing ? (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={generating}
-              onClick={async () => {
-                setGenerating(true);
-                try {
-                  const res = await fetch("/api/resumes/generate", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      jobPostingId: selectedJobPosting ?? undefined,
-                    }),
-                  });
-                  if (!res.ok) {
-                    throw new Error(await res.text());
-                  }
-                  const data: ResumeData = await res.json();
-                  setDraft(data);
-                  setDirty(true);
-                } catch (err) {
-                  console.error("Generation failed:", err);
-                } finally {
-                  setGenerating(false);
-                }
-              }}
-            >
-              <Sparkles className="size-3.5 text-accent" />
-              {generating ? "generating..." : "generate"}
-            </Button>
-          ) : undefined
-        }
-      >
-        {resume.isFrontFacing ? (
-          <p className="font-mono text-xs text-muted-foreground lowercase">
-            the live resume cannot be linked to a job posting.
-          </p>
-        ) : (
-          <JobPostingSelect
-            jobPostings={jobPostings}
-            value={selectedJobPosting}
-            onChange={(next) => {
-              setSelectedJobPosting(next);
-              setDirty(true);
-            }}
-          />
-        )}
-      </AdminSection>
-
-      <AdminSection index="02" title="profile">
-        <Textarea
-          value={draft.profile}
-          onChange={(e) => updateField("profile", e.target.value)}
-          placeholder="Write a brief professional summary..."
-          rows={4}
-        />
-      </AdminSection>
-
-      <AdminSection index="03" title="experience">
-        <div className="space-y-4">
-          {draft.experiences.map((exp, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: editor rows have no stable id; state is positional
-            <div key={index} className="relative">
-              <div className="absolute top-4 -left-9 hidden flex-col sm:flex">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => moveExperience(index, "up")}
-                  disabled={index === 0}
-                  aria-label="Move experience up"
-                  className="text-muted-foreground disabled:opacity-20"
-                >
-                  <ChevronUp className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => moveExperience(index, "down")}
-                  disabled={index === draft.experiences.length - 1}
-                  aria-label="Move experience down"
-                  className="text-muted-foreground disabled:opacity-20"
-                >
-                  <ChevronDown className="size-4" />
-                </Button>
-              </div>
-              <ExperienceEditor
-                experience={exp}
-                index={index}
-                onChange={(i, updated) => {
-                  setDraft((prev) => ({
-                    ...prev,
-                    experiences: prev.experiences.map((e, j) =>
-                      j === i ? updated : e,
-                    ),
-                  }));
-                  setDirty(true);
-                }}
-                onRemove={removeExperience}
-              />
-            </div>
-          ))}
-          <AddButton onClick={addExperience}>add experience</AddButton>
-        </div>
-      </AdminSection>
-
-      <AdminSection index="04" title="skills">
-        <SkillEditor
-          skills={draft.skills}
-          onChange={(skills) => updateField("skills", skills)}
-        />
-      </AdminSection>
-
-      <AdminSection index="05" title="education" className="mb-4">
-        <EducationEditor
-          education={draft.education}
-          onChange={(education) => updateField("education", education)}
-        />
-      </AdminSection>
-
       <SaveBar visible={dirty}>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          <Save className="size-3.5" />
-          {saving ? "saving..." : "save"}
+        <Button variant="ghost" size="sm" onClick={loadResume}>
+          Discard
+        </Button>
+        <Button size="sm" onClick={handleSave} loading={saving}>
+          <Save />
+          Save
         </Button>
       </SaveBar>
     </AdminShell>

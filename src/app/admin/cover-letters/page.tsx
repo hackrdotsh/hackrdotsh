@@ -8,9 +8,9 @@ import {
   AdminShell,
   EmptyState,
   Pill,
+  StatusText,
 } from "~/components/admin/ui";
 import { DownloadCoverLetterButton } from "~/components/download-cover-letter-button";
-import { Reveal } from "~/components/reveal";
 import { Button } from "~/components/ui/button";
 import { api } from "../../../../convex/_generated/api";
 
@@ -26,89 +26,67 @@ export default function AdminCoverLettersPage() {
 
   return (
     <AdminShell>
-      <AdminPageHeader eyebrow="admin / cover letters" title="Cover letters">
-        <Button onClick={handleCreate} variant="outline" size="sm">
-          <Plus className="size-3.5" />
-          new
+      <AdminPageHeader title="Cover letters">
+        <Button onClick={handleCreate}>
+          <Plus />
+          New letter
         </Button>
       </AdminPageHeader>
 
-      {coverLetters === undefined && (
-        <p className="mt-12 font-mono text-xs text-muted-foreground lowercase">
-          loading...
-        </p>
-      )}
-
+      {coverLetters === undefined && <StatusText>Loading…</StatusText>}
       {coverLetters === null && (
-        <div className="mt-12">
-          <EmptyState>sign in to manage cover letters.</EmptyState>
-        </div>
+        <EmptyState>Sign in to manage cover letters.</EmptyState>
       )}
-
       {coverLetters && coverLetters.length === 0 && (
-        <div className="mt-12">
-          <EmptyState>
-            no cover letters yet — create one to get started.
-          </EmptyState>
-        </div>
+        <EmptyState>No cover letters yet.</EmptyState>
       )}
 
       {coverLetters && coverLetters.length > 0 && (
-        <Reveal className="mt-8">
-          {coverLetters.map((coverLetter, i) => {
-            const jp = coverLetter.jobPosting
+        <ul className="rows mt-8 lg:grid-cols-2 2xl:grid-cols-3">
+          {coverLetters.map((coverLetter) => {
+            const posting = coverLetter.jobPosting
               ? jobPostings?.find((j) => j._id === coverLetter.jobPosting)
               : undefined;
+            const date = new Date(coverLetter.createdAt).toLocaleDateString(
+              "en-CA",
+            );
 
             return (
-              <div
-                key={coverLetter._id}
-                className="reveal-item row-hover group relative border-t hairline py-6 last:border-b"
-              >
+              <li key={coverLetter._id} className="row flex items-start gap-4">
                 <Link
                   href={`/admin/cover-letters/${coverLetter._id}`}
-                  className="absolute inset-0"
-                  aria-label={`Edit cover letter from ${new Date(coverLetter.createdAt).toLocaleDateString()}`}
+                  className="row-cover"
+                  aria-label={`Edit cover letter from ${date}`}
                 />
-                <div className="relative flex items-baseline gap-5">
-                  <span className="font-mono text-xs text-muted-foreground/60">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <span className="font-mono text-xs text-muted-foreground tabular-nums">
-                        {new Date(coverLetter.createdAt).toLocaleDateString(
-                          "en-CA",
-                          { year: "numeric", month: "short", day: "2-digit" },
-                        )}
-                      </span>
-                      {jp && (
-                        <Pill tone="muted">
-                          {jp.title}
-                          {jp.company ? ` @ ${jp.company}` : ""}
-                        </Pill>
-                      )}
-                    </div>
-                    {coverLetter.content && (
-                      <p className="mt-2 line-clamp-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                        {coverLetter.content}
-                      </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <span className="pixel-11 text-faint">{date}</span>
+                    {posting && (
+                      <Pill>
+                        {posting.title}
+                        {posting.company ? ` @ ${posting.company}` : ""}
+                      </Pill>
                     )}
                   </div>
                   {coverLetter.content && (
-                    <span className="relative shrink-0">
-                      <DownloadCoverLetterButton
-                        content={coverLetter.content}
-                        jobTitle={jp?.title}
-                        company={jp?.company}
-                      />
-                    </span>
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {coverLetter.content}
+                    </p>
                   )}
                 </div>
-              </div>
+                {coverLetter.content && (
+                  <span className="row-control shrink-0 pr-1 pb-1">
+                    <DownloadCoverLetterButton
+                      content={coverLetter.content}
+                      jobTitle={posting?.title}
+                      company={posting?.company}
+                    />
+                  </span>
+                )}
+              </li>
             );
           })}
-        </Reveal>
+        </ul>
       )}
     </AdminShell>
   );

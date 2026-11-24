@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, Save, Sparkles, Trash2 } from "lucide-react";
+import { Save, Sparkles, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { JobPostingSelect } from "~/components/admin/job-posting-select";
@@ -10,6 +10,7 @@ import {
   AdminSection,
   AdminShell,
   SaveBar,
+  StatusText,
 } from "~/components/admin/ui";
 import { DownloadCoverLetterButton } from "~/components/download-cover-letter-button";
 import { Button } from "~/components/ui/button";
@@ -48,9 +49,7 @@ export default function EditCoverLetterPage() {
   if (coverLetter === undefined) {
     return (
       <AdminShell>
-        <p className="font-mono text-xs text-muted-foreground lowercase">
-          loading...
-        </p>
+        <StatusText>Loading…</StatusText>
       </AdminShell>
     );
   }
@@ -58,9 +57,7 @@ export default function EditCoverLetterPage() {
   if (coverLetter === null) {
     return (
       <AdminShell>
-        <p className="font-mono text-xs text-muted-foreground lowercase">
-          cover letter not found.
-        </p>
+        <StatusText>Cover letter not found.</StatusText>
       </AdminShell>
     );
   }
@@ -117,13 +114,8 @@ export default function EditCoverLetterPage() {
   return (
     <AdminShell>
       <AdminPageHeader
-        eyebrow="admin / cover letters"
         title="Edit letter"
-        meta={new Date(coverLetter.createdAt).toLocaleDateString("en-CA", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
+        meta={new Date(coverLetter.createdAt).toLocaleDateString("en-CA")}
       >
         {draft && (
           <DownloadCoverLetterButton
@@ -132,72 +124,56 @@ export default function EditCoverLetterPage() {
             company={selectedJp?.company}
           />
         )}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => router.push("/admin/cover-letters")}
-          aria-label="Back to cover letters"
-        >
-          <ArrowLeft className="size-4" />
+        <Button variant="destructive" size="sm" onClick={handleDelete}>
+          <Trash2 />
+          Delete
         </Button>
       </AdminPageHeader>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Button variant="destructive-outline" size="sm" onClick={handleDelete}>
-          <Trash2 className="size-3.5" />
-          delete
-        </Button>
-        <Button variant="ghost" size="sm" onClick={loadCoverLetter}>
-          discard changes
-        </Button>
+      <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+        <AdminSection title="Job posting">
+          <div className="grid gap-4">
+            <JobPostingSelect
+              jobPostings={jobPostings}
+              value={selectedJobPosting}
+              onChange={(next) => {
+                setSelectedJobPosting(next);
+                setDirty(true);
+              }}
+            />
+            <div className="pr-2 pb-2">
+              <Button
+                variant="secondary"
+                loading={generating}
+                onClick={handleGenerate}
+              >
+                <Sparkles className="text-accent" />
+                Generate letter
+              </Button>
+            </div>
+          </div>
+        </AdminSection>
+
+        <AdminSection title="Content">
+          <Textarea
+            aria-label="Content"
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setDirty(true);
+            }}
+            rows={20}
+          />
+        </AdminSection>
       </div>
 
-      <AdminSection
-        index="01"
-        title="job posting"
-        actions={
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={generating}
-            onClick={handleGenerate}
-          >
-            <Sparkles className="size-3.5 text-accent" />
-            {generating ? "generating..." : "generate"}
-          </Button>
-        }
-      >
-        <JobPostingSelect
-          jobPostings={jobPostings}
-          value={selectedJobPosting}
-          onChange={(next) => {
-            setSelectedJobPosting(next);
-            setDirty(true);
-          }}
-        />
-      </AdminSection>
-
-      <AdminSection index="02" title="content">
-        <Textarea
-          value={draft}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            setDirty(true);
-          }}
-          placeholder="Write your cover letter here..."
-          rows={20}
-        />
-      </AdminSection>
-
       <SaveBar visible={dirty}>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          <Save className="size-3.5" />
-          {saving ? "saving..." : "save"}
+        <Button variant="ghost" size="sm" onClick={loadCoverLetter}>
+          Discard
+        </Button>
+        <Button size="sm" onClick={handleSave} loading={saving}>
+          <Save />
+          Save
         </Button>
       </SaveBar>
     </AdminShell>

@@ -8,9 +8,9 @@ import {
   AdminShell,
   EmptyState,
   Pill,
+  StatusText,
 } from "~/components/admin/ui";
 import { DownloadResumeButton } from "~/components/download-resume-button";
-import { Reveal } from "~/components/reveal";
 import { Button } from "~/components/ui/button";
 import type { ResumeData } from "~/lib/resume";
 import { api } from "../../../../convex/_generated/api";
@@ -34,99 +34,75 @@ export default function AdminResumesPage() {
 
   return (
     <AdminShell>
-      <AdminPageHeader eyebrow="admin / resumes" title="Resumes">
-        <Button onClick={handleCreate} variant="outline" size="sm">
-          <Plus className="size-3.5" />
-          new
+      <AdminPageHeader title="Resumes">
+        <Button onClick={handleCreate}>
+          <Plus />
+          New resume
         </Button>
       </AdminPageHeader>
 
-      {resumes === undefined && (
-        <p className="mt-12 font-mono text-xs text-muted-foreground lowercase">
-          loading...
-        </p>
-      )}
-
-      {resumes === null && (
-        <div className="mt-12">
-          <EmptyState>sign in to manage resumes.</EmptyState>
-        </div>
-      )}
-
+      {resumes === undefined && <StatusText>Loading…</StatusText>}
+      {resumes === null && <EmptyState>Sign in to manage resumes.</EmptyState>}
       {resumes && resumes.length === 0 && (
-        <div className="mt-12">
-          <EmptyState>no resumes yet — create one to get started.</EmptyState>
-        </div>
+        <EmptyState>No resumes yet.</EmptyState>
       )}
 
       {resumes && resumes.length > 0 && (
-        <Reveal className="mt-8">
-          {resumes.map((resume, i) => {
+        <ul className="rows mt-8 lg:grid-cols-2 2xl:grid-cols-3">
+          {resumes.map((resume) => {
             let data: ResumeData | null = null;
             try {
               data = JSON.parse(resume.content);
             } catch {
               data = null;
             }
-            const jp = resume.jobPosting
+            const posting = resume.jobPosting
               ? jobPostings?.find((j) => j._id === resume.jobPosting)
               : undefined;
+            const date = new Date(resume.createdAt).toLocaleDateString("en-CA");
 
             return (
-              <div
-                key={resume._id}
-                className="reveal-item row-hover group relative border-t hairline py-6 last:border-b"
-              >
+              <li key={resume._id} className="row flex items-start gap-4">
                 <Link
                   href={`/admin/resumes/${resume._id}`}
-                  className="absolute inset-0"
-                  aria-label={`Edit resume from ${new Date(resume.createdAt).toLocaleDateString()}`}
+                  className="row-cover"
+                  aria-label={`Edit resume from ${date}`}
                 />
-                <div className="relative flex items-baseline gap-5">
-                  <span className="font-mono text-xs text-muted-foreground/60">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <span className="font-mono text-xs text-muted-foreground tabular-nums">
-                        {new Date(resume.createdAt).toLocaleDateString(
-                          "en-CA",
-                          { year: "numeric", month: "short", day: "2-digit" },
-                        )}
-                      </span>
-                      {resume.isFrontFacing && <Pill tone="live">live</Pill>}
-                      {jp && (
-                        <Link
-                          href={`/admin/job-postings/${jp._id}`}
-                          className="relative transition-opacity hover:opacity-70"
-                        >
-                          <Pill tone="muted">
-                            {jp.title}
-                            {jp.company ? ` @ ${jp.company}` : ""}
-                          </Pill>
-                        </Link>
-                      )}
-                    </div>
-                    {data && (
-                      <p className="mt-2 line-clamp-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                        {data.profile}
-                      </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <span className="pixel-11 text-faint">{date}</span>
+                    {resume.isFrontFacing && <Pill tone="live">Live</Pill>}
+                    {posting && (
+                      <Link
+                        href={`/admin/job-postings/${posting._id}`}
+                        className="row-control hover:brightness-125"
+                      >
+                        <Pill>
+                          {posting.title}
+                          {posting.company ? ` @ ${posting.company}` : ""}
+                        </Pill>
+                      </Link>
                     )}
                   </div>
-                  {data && (
-                    <span className="relative shrink-0">
-                      <DownloadResumeButton
-                        data={data}
-                        company={jp?.company}
-                        position={jp?.title}
-                      />
-                    </span>
+                  {data?.profile && (
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {data.profile}
+                    </p>
                   )}
                 </div>
-              </div>
+                {data && (
+                  <span className="row-control shrink-0 pr-1 pb-1">
+                    <DownloadResumeButton
+                      data={data}
+                      company={posting?.company}
+                      position={posting?.title}
+                    />
+                  </span>
+                )}
+              </li>
             );
           })}
-        </Reveal>
+        </ul>
       )}
     </AdminShell>
   );

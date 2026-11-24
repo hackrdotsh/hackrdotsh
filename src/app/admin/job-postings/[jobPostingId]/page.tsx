@@ -1,15 +1,16 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   AdminPageHeader,
   AdminSection,
   AdminShell,
-  FieldLabel,
+  Field,
   SaveBar,
+  StatusText,
 } from "~/components/admin/ui";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -47,9 +48,7 @@ export default function EditJobPostingPage() {
   if (jobPosting === undefined) {
     return (
       <AdminShell>
-        <p className="font-mono text-xs text-muted-foreground lowercase">
-          loading...
-        </p>
+        <StatusText>Loading…</StatusText>
       </AdminShell>
     );
   }
@@ -57,9 +56,7 @@ export default function EditJobPostingPage() {
   if (jobPosting === null) {
     return (
       <AdminShell>
-        <p className="font-mono text-xs text-muted-foreground lowercase">
-          job posting not found.
-        </p>
+        <StatusText>Job posting not found.</StatusText>
       </AdminShell>
     );
   }
@@ -91,95 +88,69 @@ export default function EditJobPostingPage() {
   return (
     <AdminShell>
       <AdminPageHeader
-        eyebrow="admin / job postings"
         title="Edit posting"
-        meta={new Date(jobPosting.createdAt).toLocaleDateString("en-CA", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
+        meta={new Date(jobPosting.createdAt).toLocaleDateString("en-CA")}
       >
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => router.push("/admin/job-postings")}
-          aria-label="Back to job postings"
-        >
-          <ArrowLeft className="size-4" />
+        <Button variant="destructive" size="sm" onClick={handleDelete}>
+          <Trash2 />
+          Delete
         </Button>
       </AdminPageHeader>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Button variant="destructive-outline" size="sm" onClick={handleDelete}>
-          <Trash2 className="size-3.5" />
-          delete
-        </Button>
-        <Button variant="ghost" size="sm" onClick={loadJobPosting}>
-          discard changes
-        </Button>
-      </div>
-
-      <AdminSection index="01" title="role">
-        <div className="space-y-5">
-          <div>
-            <FieldLabel>title</FieldLabel>
-            <Input
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                setDirty(true);
-              }}
-              placeholder="Senior Software Developer"
-            />
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <FieldLabel>company</FieldLabel>
+      <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+        <AdminSection title="Role">
+          <div className="grid gap-4">
+            <Field label="Title">
+              <Input
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setDirty(true);
+                }}
+              />
+            </Field>
+            <Field label="Company">
               <Input
                 value={company}
                 onChange={(e) => {
                   setCompany(e.target.value);
                   setDirty(true);
                 }}
-                placeholder="Acme Inc."
               />
-            </div>
-            <div>
-              <FieldLabel>location (optional)</FieldLabel>
+            </Field>
+            <Field label="Location (optional)">
               <Input
                 value={location}
                 onChange={(e) => {
                   setLocation(e.target.value);
                   setDirty(true);
                 }}
-                placeholder="Calgary, AB"
               />
-            </div>
+            </Field>
           </div>
-        </div>
-      </AdminSection>
+        </AdminSection>
 
-      <AdminSection index="02" title="description">
-        <Textarea
-          value={description}
-          onChange={(e) => {
-            setDescription(e.target.value);
-            setDirty(true);
-          }}
-          placeholder="Paste the full job description here..."
-          rows={16}
-        />
-      </AdminSection>
+        <AdminSection title="Description">
+          <Textarea
+            aria-label="Description"
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setDirty(true);
+            }}
+            placeholder="Paste the full job description"
+            rows={16}
+          />
+        </AdminSection>
+      </div>
 
       <SaveBar visible={dirty}>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          <Save className="size-3.5" />
-          {saving ? "saving..." : "save"}
+        <Button variant="ghost" size="sm" onClick={loadJobPosting}>
+          Discard
+        </Button>
+        <Button size="sm" onClick={handleSave} loading={saving}>
+          <Save />
+          Save
         </Button>
       </SaveBar>
     </AdminShell>
