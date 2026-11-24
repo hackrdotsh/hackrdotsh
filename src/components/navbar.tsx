@@ -241,7 +241,7 @@ export function Navbar() {
               href={link.href}
               onClick={closeMenu}
               className={cn(
-                "menu-link flex items-baseline gap-4 pixel-33",
+                "menu-link flex items-baseline gap-4 font-sans text-4xl font-semibold tracking-tight",
                 isActive(pathname, link.href)
                   ? "text-foreground"
                   : "text-muted-foreground",

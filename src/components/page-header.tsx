@@ -67,7 +67,7 @@ export const PageHeader = ({
         <span className="label-index">{"// "}</span>
         <ScrambleText text={eyebrow} trigger="ready" delay={0.5} />
       </p>
-      <h1 className="reveal-line mt-4 pixel-44 text-foreground sm:pixel-66">
+      <h1 className="reveal-line mt-4 font-sans text-5xl font-semibold tracking-[-0.03em] text-foreground sm:text-6xl">
         <span>{title}</span>
       </h1>
       {description && (

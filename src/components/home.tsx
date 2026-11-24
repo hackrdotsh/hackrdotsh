@@ -24,7 +24,7 @@ function SectionHeading({ index, title }: { index: string; title: string }) {
   return (
     <div className="fade-up flex items-baseline gap-4">
       <span className="font-mono text-xs text-accent">{index}</span>
-      <h2 className="pixel-22 text-foreground">
+      <h2 className="font-sans text-xl font-semibold tracking-tight text-foreground">
         <ScrambleText text={title} trigger="view" />
       </h2>
       <span className="h-px flex-1 bg-border" aria-hidden="true" />
@@ -178,7 +178,7 @@ export function Home() {
                 delay={1}
               />
             </p>
-            <h1 className="mt-6 pixel-44 sm:pixel-66 lg:pixel-88">
+            <h1 className="mt-6 font-sans text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-semibold tracking-[-0.04em]">
               <span className="reveal-line">
                 <span>Hey, I'm</span>
               </span>
@@ -242,7 +242,7 @@ export function Home() {
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <div>
-                      <h3 className="glitch-hover pixel-22 text-foreground transition-colors group-hover:text-accent sm:pixel-33">
+                      <h3 className="glitch-hover font-sans text-2xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-accent sm:text-4xl">
                         {p.title}
                         <ArrowUpRight className="mb-0.5 ml-2.5 inline-block size-5 text-muted-foreground/50 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-accent sm:ml-3.5 sm:size-7" />
                       </h3>

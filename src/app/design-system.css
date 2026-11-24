@@ -26,47 +26,12 @@
   --lift-3: 0 8px 16px rgb(0 0 0 / 0.5), 0 28px 72px rgb(0 0 0 / 0.65);
 }
 
-/* Pixel type. Departure Mono is drawn on an 11px grid, so it only appears at
-   whole multiples of 11. */
+/* Departure Mono is for small labels and metadata. It is drawn on an 11px
+   grid, so it is set at exactly 11px. Headings and body use DM Sans. */
 @utility pixel-11 {
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 16px;
-  letter-spacing: 0;
-}
-
-@utility pixel-22 {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  line-height: 28px;
-  letter-spacing: 0;
-}
-
-@utility pixel-33 {
-  font-family: var(--font-mono);
-  font-size: 33px;
-  line-height: 40px;
-  letter-spacing: 0;
-}
-
-@utility pixel-44 {
-  font-family: var(--font-mono);
-  font-size: 44px;
-  line-height: 48px;
-  letter-spacing: 0;
-}
-
-@utility pixel-66 {
-  font-family: var(--font-mono);
-  font-size: 66px;
-  line-height: 68px;
-  letter-spacing: 0;
-}
-
-@utility pixel-88 {
-  font-family: var(--font-mono);
-  font-size: 88px;
-  line-height: 88px;
   letter-spacing: 0;
 }
 

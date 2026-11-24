@@ -78,9 +78,8 @@ export async function GET(request: NextRequest) {
   };
   const trimmed = title.trim();
   const bareTitle = truncate(trimmed.replace(/\.$/, ""), 160);
-  // Departure Mono is drawn on an 11px grid, so sizes are multiples of 11.
   const titleSize =
-    bareTitle.length > 45 ? 44 : bareTitle.length > 20 ? 66 : 88;
+    bareTitle.length > 80 ? 56 : bareTitle.length > 25 ? 68 : 84;
   const showAccentDot = bareTitle.length <= 25 && !/[!?…]$/.test(bareTitle);
   const displayDescription = truncate(description, 170);
 
@@ -109,13 +108,16 @@ export async function GET(request: NextRequest) {
         <div
           style={{
             display: "flex",
+            gap: "12px",
             fontFamily: "Departure Mono",
             fontSize: 22,
+            letterSpacing: "0.18em",
             textTransform: "uppercase",
             color: MUTED,
           }}
         >
-          hackr.sh
+          <span style={{ color: ACCENT }}>{"//"}</span>
+          <span>hackr.sh</span>
         </div>
         <div
           style={{
@@ -127,13 +129,14 @@ export async function GET(request: NextRequest) {
           <h1
             style={{
               fontSize: titleSize,
-              fontWeight: 400,
-              fontFamily: "Departure Mono",
+              fontWeight: 600,
+              fontFamily: sans,
               color: FG,
+              letterSpacing: "-0.04em",
               textAlign: "left",
               width: "100%",
               margin: 0,
-              lineHeight: 1.1,
+              lineHeight: 1.05,
             }}
           >
             {bareTitle}
@@ -179,20 +182,30 @@ export async function GET(request: NextRequest) {
             <div
               style={{
                 display: "flex",
+                alignItems: "center",
+                gap: "12px",
                 fontFamily: "Departure Mono",
-                fontSize: 33,
+                fontSize: 22,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
                 color: FG,
               }}
             >
               hackr
-              <span style={{ color: ACCENT }}>.</span>
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  backgroundColor: ACCENT,
+                }}
+              />
             </div>
             {path ? (
               <div
                 style={{
                   display: "flex",
                   fontFamily: "Departure Mono",
-                  fontSize: 22,
+                  fontSize: 20,
                   color: MUTED,
                 }}
               >

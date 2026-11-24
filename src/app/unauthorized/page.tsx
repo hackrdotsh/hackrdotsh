@@ -20,7 +20,9 @@ export default function UnauthorizedPage() {
       id="main-content"
       className="mx-auto grid w-full max-w-md justify-items-start gap-5 px-5 py-24"
     >
-      <h1 className="pixel-33 text-foreground">Access denied</h1>
+      <h1 className="font-sans text-3xl font-semibold tracking-tight text-foreground">
+        Access denied
+      </h1>
       <p className="leading-relaxed text-muted-foreground">
         Only the site owner can open this page.
         {session?.user && ` You're signed in as ${session.user.email}.`}

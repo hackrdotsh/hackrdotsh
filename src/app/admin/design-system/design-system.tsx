@@ -35,13 +35,28 @@ const colors = [
   { name: "danger-surface", className: "bg-danger-surface" },
 ];
 
-const pixelSizes = [
-  { name: "pixel-88", className: "pixel-88", sample: "hackr." },
-  { name: "pixel-66", className: "pixel-66", sample: "hackr." },
-  { name: "pixel-44", className: "pixel-44", sample: "Selected work" },
-  { name: "pixel-33", className: "pixel-33", sample: "Selected work" },
-  { name: "pixel-22", className: "pixel-22", sample: "What I'm working on" },
-  { name: "pixel-11", className: "pixel-11", sample: "2026-11-24 · 4 MIN" },
+const headingSizes = [
+  {
+    name: "Display",
+    className:
+      "text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-semibold tracking-[-0.04em]",
+    sample: "hackr.",
+  },
+  {
+    name: "Page title",
+    className: "text-5xl font-semibold tracking-[-0.03em] sm:text-6xl",
+    sample: "Selected work",
+  },
+  {
+    name: "Row title",
+    className: "text-2xl font-semibold tracking-tight sm:text-4xl",
+    sample: "co.codes",
+  },
+  {
+    name: "Section",
+    className: "text-xl font-semibold tracking-tight",
+    sample: "What I'm working on",
+  },
 ];
 
 const buttonVariants = [
@@ -74,7 +89,10 @@ function Band({
     <section aria-labelledby={id} className="pt-12">
       <hr className="rule" />
       <div className="grid gap-8 pt-10 md:grid-cols-[160px_minmax(0,1fr)] md:gap-12">
-        <h2 id={id} className="pixel-22 text-foreground">
+        <h2
+          id={id}
+          className="font-sans text-xl font-semibold tracking-tight text-foreground"
+        >
           {title}
         </h2>
         <div className="grid min-w-0 gap-10">{children}</div>
@@ -121,7 +139,9 @@ export function DesignSystem() {
   return (
     <main id="main-content" tabIndex={-1}>
       <div className="mx-auto w-full max-w-5xl px-5 pt-28 pb-40 sm:px-8">
-        <h1 className="pixel-44 text-foreground">Design system</h1>
+        <h1 className="font-sans text-3xl font-semibold tracking-[-0.02em] text-foreground sm:text-4xl">
+          Design system
+        </h1>
 
         <Band title="Colour">
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -139,9 +159,9 @@ export function DesignSystem() {
         </Band>
 
         <Band title="Type">
-          <Specimen label="Departure Mono, multiples of 11">
+          <Specimen label="DM Sans headings">
             <ul className="grid gap-6">
-              {pixelSizes.map((size) => (
+              {headingSizes.map((size) => (
                 <li
                   key={size.name}
                   className="grid gap-1 sm:grid-cols-[96px_minmax(0,1fr)] sm:items-baseline"
@@ -154,7 +174,7 @@ export function DesignSystem() {
               ))}
             </ul>
           </Specimen>
-          <Specimen label="DM Sans">
+          <Specimen label="DM Sans body">
             <p className="max-w-xl text-lg leading-relaxed text-foreground">
               I'm a software developer building most things with TypeScript,
               React, and Tailwind.
@@ -162,6 +182,11 @@ export function DesignSystem() {
             <p className="max-w-xl text-[0.9375rem] leading-relaxed text-muted-foreground">
               I love and use NixOS and Nix on a daily basis. Reproducible
               builds, declarative config, pinned versioning for projects.
+            </p>
+          </Specimen>
+          <Specimen label="Departure Mono labels">
+            <p className="pixel-11 text-muted-foreground uppercase">
+              2026-11-24 · 4 min
             </p>
           </Specimen>
           <Specimen label="JetBrains Mono">

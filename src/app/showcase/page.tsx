@@ -91,7 +91,7 @@ export default function Showcase() {
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <h2 className="glitch-hover pixel-22 text-foreground transition-colors group-hover:text-accent sm:pixel-33">
+                  <h2 className="glitch-hover font-sans text-2xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-accent sm:text-4xl">
                     {project.title}
                     <ArrowUpRight className="mb-0.5 ml-2.5 inline-block size-5 text-muted-foreground/50 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-accent sm:ml-3.5 sm:size-7" />
                   </h2>

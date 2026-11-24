@@ -162,7 +162,10 @@ export function DialogTitle({
 }: DialogPrimitive.Title.Props): React.ReactElement {
   return (
     <DialogPrimitive.Title
-      className={cn("pixel-22", className)}
+      className={cn(
+        "font-heading font-semibold text-xl leading-none",
+        className,
+      )}
       data-slot="dialog-title"
       {...props}
     />

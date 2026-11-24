@@ -63,7 +63,9 @@ export default function SignInPage() {
       id="main-content"
       className="mx-auto grid w-full max-w-xs gap-6 px-5 py-24"
     >
-      <h1 className="pixel-33 text-foreground">Sign in</h1>
+      <h1 className="font-sans text-3xl font-semibold tracking-tight text-foreground">
+        Sign in
+      </h1>
       {setupDone && (
         <p className="text-sm text-muted-foreground">
           Passkey registered. You can sign in now.

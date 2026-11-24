@@ -27,7 +27,9 @@ export function AdminPageHeader({
   return (
     <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
       <div className="min-w-0">
-        <h1 className="pixel-33 text-foreground">{title}</h1>
+        <h1 className="font-sans text-3xl font-semibold tracking-[-0.02em] text-foreground sm:text-4xl">
+          {title}
+        </h1>
         {meta && <p className="pixel-11 mt-2 text-faint">{meta}</p>}
       </div>
       {children && (
@@ -55,7 +57,9 @@ export function AdminSection({
   return (
     <section className={cn("panel min-w-0 p-5", className)}>
       <div className="flex min-h-9 flex-wrap items-center justify-between gap-4 pr-2">
-        <h2 className="pixel-22 text-foreground">{title}</h2>
+        <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
+          {title}
+        </h2>
         {actions}
       </div>
       <div className="mt-5">{children}</div>
