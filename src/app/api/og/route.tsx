@@ -5,8 +5,7 @@ const BG = "#0d0c0b";
 const FG = "#e9e8e4";
 const MUTED = "#82807b";
 const ACCENT = "#00c28c";
-const HAIRLINE = "rgba(255,255,255,0.08)";
-const GRID_LINE = "rgba(255,255,255,0.04)";
+const RULE = "#2a2927";
 
 async function loadDmSans(weight: 400 | 600): Promise<ArrayBuffer> {
   const css = await fetch(
@@ -79,8 +78,9 @@ export async function GET(request: NextRequest) {
   };
   const trimmed = title.trim();
   const bareTitle = truncate(trimmed.replace(/\.$/, ""), 160);
+  // Departure Mono is drawn on an 11px grid, so sizes are multiples of 11.
   const titleSize =
-    bareTitle.length > 80 ? 56 : bareTitle.length > 25 ? 68 : 84;
+    bareTitle.length > 45 ? 44 : bareTitle.length > 20 ? 66 : 88;
   const showAccentDot = bareTitle.length <= 25 && !/[!?…]$/.test(bareTitle);
   const displayDescription = truncate(description, 170);
 
@@ -97,30 +97,6 @@ export async function GET(request: NextRequest) {
     >
       <div
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          backgroundImage: `linear-gradient(to right, ${GRID_LINE} 1px, transparent 1px), linear-gradient(to bottom, ${GRID_LINE} 1px, transparent 1px)`,
-          backgroundSize: "72px 72px",
-          backgroundRepeat: "repeat",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          backgroundImage: `linear-gradient(to bottom, rgba(13,12,11,0) 0%, rgba(13,12,11,0) 30%, ${BG} 80%)`,
-        }}
-      />
-      <div
-        style={{
           position: "relative",
           display: "flex",
           flexDirection: "column",
@@ -133,16 +109,13 @@ export async function GET(request: NextRequest) {
         <div
           style={{
             display: "flex",
-            gap: "12px",
             fontFamily: "Departure Mono",
             fontSize: 22,
-            letterSpacing: "0.18em",
             textTransform: "uppercase",
             color: MUTED,
           }}
         >
-          <span style={{ color: ACCENT }}>{"//"}</span>
-          <span>hackr.sh</span>
+          hackr.sh
         </div>
         <div
           style={{
@@ -154,14 +127,13 @@ export async function GET(request: NextRequest) {
           <h1
             style={{
               fontSize: titleSize,
-              fontWeight: 600,
-              fontFamily: sans,
+              fontWeight: 400,
+              fontFamily: "Departure Mono",
               color: FG,
-              letterSpacing: "-0.04em",
               textAlign: "left",
               width: "100%",
               margin: 0,
-              lineHeight: 1.05,
+              lineHeight: 1.1,
             }}
           >
             {bareTitle}
@@ -192,8 +164,8 @@ export async function GET(request: NextRequest) {
             style={{
               display: "flex",
               width: "100%",
-              height: 1,
-              backgroundColor: HAIRLINE,
+              height: 2,
+              backgroundColor: RULE,
             }}
           />
           <div
@@ -207,30 +179,20 @@ export async function GET(request: NextRequest) {
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: "12px",
                 fontFamily: "Departure Mono",
-                fontSize: 22,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
+                fontSize: 33,
                 color: FG,
               }}
             >
               hackr
-              <div
-                style={{
-                  width: 10,
-                  height: 10,
-                  backgroundColor: ACCENT,
-                }}
-              />
+              <span style={{ color: ACCENT }}>.</span>
             </div>
             {path ? (
               <div
                 style={{
                   display: "flex",
                   fontFamily: "Departure Mono",
-                  fontSize: 20,
+                  fontSize: 22,
                   color: MUTED,
                 }}
               >
