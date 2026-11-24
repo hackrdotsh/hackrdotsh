@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils";
 export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <main id="main-content" tabIndex={-1} className="outline-none">
-      <div className="mx-auto w-full max-w-[1600px] px-5 pt-4 pb-16 sm:px-8">
+      <div className="mx-auto w-full max-w-[1600px] px-5 pt-20 pb-16 sm:px-8">
         <AdminTabs />
         <div className="pt-8">{children}</div>
       </div>

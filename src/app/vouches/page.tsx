@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PageHeader, PageShell } from "~/components/page-shell";
+import { PageHeader } from "~/components/page-header";
 import { generatePageMetadata } from "~/lib/metadata";
 import { VouchesGrid } from "./vouches-grid";
 
@@ -11,9 +11,15 @@ export const metadata: Metadata = generatePageMetadata({
 
 export default function VouchesPage() {
   return (
-    <PageShell>
-      <PageHeader title="Vouches" description="People I've vouched for." />
-      <VouchesGrid />
-    </PageShell>
+    <main id="main-content" tabIndex={-1}>
+      <div className="mx-auto max-w-5xl px-5 pt-36 pb-24 sm:px-8 sm:pt-44">
+        <PageHeader
+          eyebrow="vouches"
+          title="Vouches"
+          description="People I've vouched for."
+        />
+        <VouchesGrid />
+      </div>
+    </main>
   );
 }

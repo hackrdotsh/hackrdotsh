@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Footer } from "~/components/footer";
 import { Navbar } from "~/components/navbar";
+import { PageLoader } from "~/components/page-loader";
 import { Providers } from "~/components/providers";
 import "./globals.css";
 import { getToken } from "~/lib/auth-server";
@@ -101,11 +102,13 @@ export default async function RootLayout({
       </head>
       <body className="antialiased">
         <Providers initialToken={token}>
-          <div className="flex min-h-svh flex-col">
+          <PageLoader>
             <Navbar />
-            <div className="flex-1">{children}</div>
-            <Footer />
-          </div>
+            <div className="flex min-h-svh flex-col">
+              <div className="relative z-10 flex-1">{children}</div>
+              <Footer />
+            </div>
+          </PageLoader>
         </Providers>
       </body>
     </html>

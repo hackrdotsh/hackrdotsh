@@ -1,6 +1,8 @@
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
-import { PageHeader, PageShell } from "~/components/page-shell";
+import { DitherHover } from "~/components/dither-hover";
+import { PageHeader } from "~/components/page-header";
+import { Reveal } from "~/components/reveal";
 import { generatePageMetadata } from "~/lib/metadata";
 
 export const metadata: Metadata = generatePageMetadata({
@@ -64,48 +66,45 @@ const projects: { title: string; description: string; link?: string }[] = [
   },
 ];
 
-function ProjectRow({ project }: { project: (typeof projects)[number] }) {
-  const content = (
-    <span className="grid gap-1 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_auto] sm:items-baseline sm:gap-6">
-      <span className="pixel-22 text-foreground">{project.title}</span>
-      <span className="text-sm leading-relaxed text-muted-foreground">
-        {project.description}
-      </span>
-      {project.link && (
-        <ArrowUpRight
-          aria-hidden="true"
-          className="hidden size-4 self-center text-faint sm:block"
-        />
-      )}
-    </span>
-  );
-
-  if (!project.link) return <div className="row">{content}</div>;
-
-  return (
-    <a
-      href={project.link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="row"
-    >
-      {content}
-    </a>
-  );
-}
-
 export default function Showcase() {
   return (
-    <PageShell>
-      <PageHeader title="Selected work" />
+    <main id="main-content" tabIndex={-1}>
+      <div className="mx-auto max-w-5xl px-5 pt-36 pb-24 sm:px-8 sm:pt-44">
+        <PageHeader
+          eyebrow="showcase"
+          title="Selected work"
+          description="A collection of projects I've built — from communications platforms to developer tools."
+        />
 
-      <ul className="rows mt-12">
-        {projects.map((project) => (
-          <li key={project.title}>
-            <ProjectRow project={project} />
-          </li>
-        ))}
-      </ul>
-    </PageShell>
+        <Reveal className="mt-16 sm:mt-20">
+          {projects.map((project, i) => (
+            <a
+              key={project.title}
+              href={project.link}
+              target={project.link ? "_blank" : undefined}
+              rel={project.link ? "noopener noreferrer" : undefined}
+              className="reveal-item row-hover group relative block border-t hairline py-8 sm:py-10"
+            >
+              <DitherHover />
+              <div className="relative flex items-baseline gap-5 sm:gap-8">
+                <span className="font-mono text-xs text-muted-foreground/60">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h2 className="glitch-hover pixel-22 text-foreground transition-colors group-hover:text-accent sm:pixel-33">
+                    {project.title}
+                    <ArrowUpRight className="mb-0.5 ml-2.5 inline-block size-5 text-muted-foreground/50 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-accent sm:ml-3.5 sm:size-7" />
+                  </h2>
+                  <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                    {project.description}
+                  </p>
+                </div>
+              </div>
+            </a>
+          ))}
+          <div className="reveal-item border-t hairline" />
+        </Reveal>
+      </div>
+    </main>
   );
 }

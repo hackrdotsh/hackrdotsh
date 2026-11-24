@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal portfolio/site built with **vinext** (Next.js 16 App Router API on Vite, deployed to Cloudflare Workers), **React 19**, and **Tailwind CSS v4**. Auth is **Better Auth** (passkey-only) backed by a locally-installed Convex component. Managed via **pnpm** with a **Nix flake** dev shell.
+Personal portfolio/site built with **vinext** (Next.js 16 App Router API on Vite, deployed to Cloudflare Workers), **React 19**, **Tailwind CSS v4**, and **GSAP** for animations. Auth is **Better Auth** (passkey-only) backed by a locally-installed Convex component. Managed via **pnpm** with a **Nix flake** dev shell.
 
 ## Essential Commands
 
@@ -56,8 +56,8 @@ public/            # Static assets
 ```
 
 - **Path alias**: `~/*` maps to `./src/*` (configured in `tsconfig.json` `paths`). Use this for all internal imports.
-- **Layout**: `RootLayout` wraps all pages with DM Sans and Departure Mono fonts, the navbars, and the footer.
-- **Design system**: tokens live in `src/app/globals.css`; dither patterns, pixel type, and component classes (`btn`, `field`, `tag`, `rows`, `dither-frame`, `rule`) live in `src/app/design-system.css`. `/admin/design-system` shows every token and component; add new ones there. The look is dark only, square-cornered, and built from dither. State changes are instant and animations use `steps()`; the only eased motion is a raised button lifting and pressing and a select's highlight bar sliding between items.
+- **Layout**: `RootLayout` wraps all pages with DM Sans and Departure Mono fonts, the `PageLoader`, the navbar, and the footer.
+- **Design system**: tokens live in `src/app/globals.css`; dither patterns, pixel type, and component classes (`btn`, `field`, `tag`, `rows`, `dither-frame`, `rule`) live in `src/app/design-system.css`. `/admin/design-system` shows every token and component; add new ones there. The look is dark only, square-cornered, and built from dither. The components change colour and pattern instantly and only animate travel (button presses, the select highlight). Page motion lives outside them: `PageLoader` plays on load and fires `page-ready`, then `Reveal`, `ScrambleText`, the heading line reveals, `DitherHover` and the glitch classes run. Use `onPageReady` from `~/lib/page-ready` to start entrance animations, register `useGSAP` before use, and honour `prefers-reduced-motion`.
 
 ## UI Components
 

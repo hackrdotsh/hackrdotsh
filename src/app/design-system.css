@@ -1,7 +1,8 @@
 /* The pixel system. Dither is the material: tone comes from pattern density,
    never from blur or gradients. Corners are square. Colour and pattern change
-   at once; the only eased motion is a raised button's lift and press and a
-   list's highlight bar sliding between items. */
+   at once; a raised button's lift and press and a list's highlight bar are
+   the motion these components own. Page entrances and hover effects live in
+   globals.css and the site's components. */
 
 :root {
   /* Dither masks, one cell = 2px. They carry no colour: paint with
