@@ -35,7 +35,6 @@ export function Navbar() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const barRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -45,13 +44,6 @@ export function Navbar() {
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -150,12 +142,7 @@ export function Navbar() {
     <>
       <header
         ref={barRef}
-        className={cn(
-          "fixed inset-x-0 top-0 z-40 transition-[background-color,border-color,backdrop-filter] duration-500",
-          scrolled
-            ? "border-b hairline bg-background/70 backdrop-blur-md"
-            : "border-b border-transparent",
-        )}
+        className="fixed inset-x-0 top-0 z-40 border-b hairline bg-background/70 backdrop-blur-md"
       >
         <nav
           className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 sm:px-8"
