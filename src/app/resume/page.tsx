@@ -4,14 +4,12 @@ import { useQuery } from "convex/react";
 import { DownloadResumeButton } from "~/components/download-resume-button";
 import { PageHeader } from "~/components/page-header";
 import { ResumeView } from "~/components/resume-view";
-import type { ResumeData } from "~/lib/resume";
+import { parseResume } from "~/lib/resume";
 import { api } from "../../../convex/_generated/api";
 
 export default function Resume() {
   const resumeDoc = useQuery(api.resumes.getFrontFacing);
-  const resume: ResumeData | null = resumeDoc
-    ? JSON.parse(resumeDoc.content)
-    : null;
+  const resume = resumeDoc ? parseResume(resumeDoc.content) : null;
 
   return (
     <main id="main-content" tabIndex={-1}>

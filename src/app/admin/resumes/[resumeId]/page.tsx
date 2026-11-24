@@ -39,7 +39,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
 import { Textarea } from "~/components/ui/textarea";
-import type { ResumeData } from "~/lib/resume";
+import { parseResume, type ResumeData } from "~/lib/resume";
 import { cn } from "~/lib/utils";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -462,12 +462,7 @@ export default function EditResumePage() {
 
   const loadResume = useCallback(() => {
     if (!resume) return;
-    try {
-      const data = JSON.parse(resume.content) as ResumeData;
-      setDraft(data);
-    } catch {
-      setDraft(blankResume);
-    }
+    setDraft(parseResume(resume.content) ?? blankResume);
     setSelectedJobPosting(resume.jobPosting ?? null);
     setDirty(false);
   }, [resume]);

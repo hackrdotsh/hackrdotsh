@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { fetchAuthQuery, isAdmin } from "~/lib/auth-server";
+import { parseYear } from "~/lib/resume";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 
@@ -185,10 +186,7 @@ Instructions:
         ...exp,
         years: {
           start: exp.years.start,
-          end:
-            exp.years.end === "Present"
-              ? ("Present" as const)
-              : Number(exp.years.end),
+          end: parseYear(exp.years.end),
         },
         description: exp.description,
       })),

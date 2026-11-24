@@ -13,7 +13,7 @@ import {
 import { DownloadResumeButton } from "~/components/download-resume-button";
 import { ResumePreviewButton } from "~/components/resume-preview-button";
 import { Button } from "~/components/ui/button";
-import type { ResumeData } from "~/lib/resume";
+import { parseResume } from "~/lib/resume";
 import { api } from "../../../../convex/_generated/api";
 
 export default function AdminResumesPage() {
@@ -51,12 +51,7 @@ export default function AdminResumesPage() {
       {resumes && resumes.length > 0 && (
         <ul className="rows mt-8 lg:grid-cols-2 2xl:grid-cols-3">
           {resumes.map((resume) => {
-            let data: ResumeData | null = null;
-            try {
-              data = JSON.parse(resume.content);
-            } catch {
-              data = null;
-            }
+            const data = parseResume(resume.content);
             const posting = resume.jobPosting
               ? jobPostings?.find((j) => j._id === resume.jobPosting)
               : undefined;
