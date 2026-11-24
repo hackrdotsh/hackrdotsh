@@ -1,17 +1,6 @@
-let pageReadyFired = false;
-
+// The page has no loading overlay any more, so entrance animations start as
+// soon as their component mounts.
 export function onPageReady(fn: () => void) {
-  if (pageReadyFired) {
-    fn();
-    return () => {};
-  }
-  const handler = () => {
-    pageReadyFired = true;
-    window.removeEventListener("page-ready", handler);
-    fn();
-  };
-  window.addEventListener("page-ready", handler);
-  return () => {
-    window.removeEventListener("page-ready", handler);
-  };
+  fn();
+  return () => {};
 }

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { AdminNavbar } from "~/components/admin-navbar";
 import { Footer } from "~/components/footer";
 import { Navbar } from "~/components/navbar";
-import { PageLoader } from "~/components/page-loader";
 import { Providers } from "~/components/providers";
 import "./globals.css";
 import { AmbientBackground } from "~/components/ambient-background";
@@ -104,15 +103,13 @@ export default async function RootLayout({
       </head>
       <body className="antialiased">
         <Providers initialToken={token}>
-          <PageLoader>
-            <AmbientBackground />
-            <Navbar />
-            <AdminNavbar />
-            <div className="flex min-h-svh flex-col">
-              <main className="relative z-10 flex-1">{children}</main>
-              <Footer />
-            </div>
-          </PageLoader>
+          <AmbientBackground />
+          <Navbar />
+          <AdminNavbar />
+          <div className="flex min-h-svh flex-col">
+            <main className="relative z-10 flex-1">{children}</main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>
