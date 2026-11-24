@@ -11,6 +11,7 @@ import {
   StatusText,
 } from "~/components/admin/ui";
 import { DownloadResumeButton } from "~/components/download-resume-button";
+import { ResumePreviewButton } from "~/components/resume-preview-button";
 import { Button } from "~/components/ui/button";
 import type { ResumeData } from "~/lib/resume";
 import { api } from "../../../../convex/_generated/api";
@@ -91,7 +92,8 @@ export default function AdminResumesPage() {
                   )}
                 </div>
                 {data && (
-                  <span className="row-control shrink-0 pr-1 pb-1">
+                  <span className="row-control flex shrink-0 gap-3 pr-1 pb-1">
+                    <ResumePreviewButton data={data} />
                     <DownloadResumeButton
                       data={data}
                       company={posting?.company}

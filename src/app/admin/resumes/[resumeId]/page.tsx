@@ -25,6 +25,7 @@ import {
 } from "~/components/admin/ui";
 import { ConfirmDialog } from "~/components/confirm-dialog";
 import { DownloadResumeButton } from "~/components/download-resume-button";
+import { ResumePreviewButton } from "~/components/resume-preview-button";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -604,6 +605,7 @@ export default function EditResumePage() {
         meta={new Date(resume.createdAt).toLocaleDateString("en-CA")}
       >
         {resume.isFrontFacing && <Pill tone="live">Live</Pill>}
+        <ResumePreviewButton data={draft} />
         <DownloadResumeButton
           data={draft}
           company={selectedJp?.company}
