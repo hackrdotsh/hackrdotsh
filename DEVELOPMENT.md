@@ -33,14 +33,21 @@ This provides `pnpm`, `nodejs_24`, and `biome`.
 
 ## Cloudflare builds
 
-Set the build command to `pnpm build` and the deploy command to `pnpm deploy`.
-The build generates `dist/server/wrangler.json`, including the assets directory;
-deploying the source `wrangler.jsonc` directly skips this step. Cloudflare can
-select Node 24 from `.node-version`. Remove any older `NODE_VERSION` override.
-The build environment also needs the production `CONVEX_DEPLOY_KEY` and the
-app's public Convex environment variables.
-After changing the Convex project slug, replace any existing deploy key in
-Cloudflare's build variables with a newly generated production deploy key.
+Workers Builds deploys every push to `main` on GitHub. No build command is
+needed: when `pnpm install` runs there, `scripts/workers-ci-build.mjs` builds
+the site, and the default deploy command (`npx wrangler deploy`) picks up the
+generated configuration. Locally the script does nothing.
+
+- Production's public Convex URLs come from the committed `.env.production`.
+  Dev values belong in `.env.development.local`, which production builds never
+  read.
+- Set `CONVEX_DEPLOY_KEY` (a production deploy key) under Settings > Build >
+  Build variables and secrets so each build also deploys the Convex functions.
+  Without it the build warns and deploys the site only.
+- Cloudflare selects Node 24 from `.node-version`. Remove any older
+  `NODE_VERSION` override.
+
+To deploy by hand, run `pnpm build` and then `pnpm deploy`.
 
 Run `pnpm audit` to review dependency advisories. See `SECURITY.md` for the
 remaining Better Auth compatibility constraint.
