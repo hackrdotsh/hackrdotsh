@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef } from "react";
 import { ScrambleText } from "~/components/scramble-text";
+import { ditherIn, prepareDitherIn } from "~/lib/dither-in";
 import { onPageReady } from "~/lib/page-ready";
 
 gsap.registerPlugin(useGSAP);
@@ -25,15 +26,14 @@ export const PageHeader = ({
       if (!container) return;
 
       const line = container.querySelector(".reveal-line > span");
-      const meta = container.querySelectorAll(".header-meta");
+      const meta = gsap.utils.toArray<HTMLElement>(".header-meta", container);
 
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         if (line) gsap.set(line, { y: 0 });
-        gsap.set(meta, { opacity: 1, y: 0 });
         return;
       }
 
-      gsap.set(meta, { opacity: 0, y: 12 });
+      prepareDitherIn(meta);
 
       const cleanup = onPageReady(() => {
         const tl = gsap.timeline({ delay: 0.15 });
@@ -44,17 +44,11 @@ export const PageHeader = ({
             ease: "power4.out",
           });
         }
-        tl.to(
-          meta,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: "power3.out",
-          },
-          "-=0.5",
-        );
+        tl.add(() => {
+          for (const [i, el] of meta.entries()) {
+            ditherIn(el, { delay: i * 0.08 });
+          }
+        }, "-=0.5");
       });
       return cleanup;
     },

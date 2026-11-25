@@ -11,6 +11,10 @@
   --dither-50: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E");
   --dither-75: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h4v1H0zM0 1h1v1H0zM2 1h1v1H2zM0 2h4v1H0zM0 3h1v1H0zM2 3h1v1H2z'/%3E%3C/svg%3E");
   --solid: linear-gradient(#000 0 0);
+  /* The leading edge of a dither-in: six ordered-dither bands, densest at
+     the top, thinning to nothing. The tile is 4 cells wide and 24 tall. */
+  --dither-in-cell: 6px;
+  --dither-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='48' viewBox='0 0 4 24' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM3 0h1v1H3zM0 1h1v1H0zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM1 2h1v1H1zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM2 3h1v1H2zM3 3h1v1H3zM0 4h1v1H0zM1 4h1v1H1zM2 4h1v1H2zM3 4h1v1H3zM1 5h1v1H1zM3 5h1v1H3zM0 6h1v1H0zM2 6h1v1H2zM3 6h1v1H3zM1 7h1v1H1zM3 7h1v1H3zM0 8h1v1H0zM1 8h1v1H1zM2 8h1v1H2zM1 9h1v1H1zM3 9h1v1H3zM0 10h1v1H0zM2 10h1v1H2zM1 11h1v1H1zM3 11h1v1H3zM0 12h1v1H0zM2 12h1v1H2zM1 13h1v1H1zM3 13h1v1H3zM0 14h1v1H0zM2 14h1v1H2zM3 15h1v1H3zM0 16h1v1H0zM2 16h1v1H2zM1 17h1v1H1zM0 18h1v1H0zM2 18h1v1H2zM0 20h1v1H0zM2 22h1v1H2z'/%3E%3C/svg%3E");
 
   /* Raised buttons lift and press quickly; nothing else on them moves. */
   --press-duration: 90ms;
@@ -647,4 +651,22 @@
   .select-list::after {
     transition: none;
   }
+}
+
+/* ---------- dither-in ---------- */
+
+/* An entrance: pixels appear from the top of the element to the bottom.
+   Everything above --dither-front is solid and the dithered edge hangs below
+   it. ~/lib/dither-in moves the front and removes the class when it lands. */
+.dither-in {
+  mask-image: var(--dither-edge), var(--solid);
+  mask-repeat: repeat-x, no-repeat;
+  /* Hidden until the front is set: the whole edge sits above the element. */
+  --dither-front: calc(var(--dither-in-cell) * -24);
+  mask-position:
+    0 var(--dither-front),
+    0 0;
+  mask-size:
+    calc(var(--dither-in-cell) * 4) calc(var(--dither-in-cell) * 24),
+    100% max(0px, var(--dither-front));
 }

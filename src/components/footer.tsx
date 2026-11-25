@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowUpRight } from "lucide-react";
 import { useRef } from "react";
 import { PixelMountains } from "~/components/pixel-mountains";
+import { ditherIn, prepareDitherIn } from "~/lib/dither-in";
 import { contactLinks, projects } from "~/lib/site-data";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -18,32 +19,13 @@ export function Footer() {
       const footer = footerRef.current;
       if (!footer) return;
 
-      const mm = gsap.matchMedia();
-
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const fadeUps = gsap.utils.toArray<HTMLElement>(".fade-up", footer);
-        for (const el of fadeUps) {
-          gsap.fromTo(
-            el,
-            { opacity: 0, y: 24 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: el,
-                start: "top 88%",
-                once: true,
-              },
-            },
-          );
-        }
-      });
-
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(".fade-up", { opacity: 1, y: 0 });
-      });
+      const items = gsap.utils.toArray<HTMLElement>(".dither-in-item", footer);
+      prepareDitherIn(items);
+      for (const el of items) {
+        ditherIn(el, {
+          scrollTrigger: { trigger: el, start: "top 88%", once: true },
+        });
+      }
     },
     { scope: footerRef },
   );
@@ -51,12 +33,12 @@ export function Footer() {
   return (
     <footer ref={footerRef} className="relative z-10 border-t hairline">
       <div className="mx-auto grid max-w-5xl gap-12 px-5 py-16 sm:grid-cols-[1.4fr_1fr_1fr] sm:px-8 sm:py-20">
-        <div className="fade-up">
+        <div className="dither-in-item">
           <p className="font-sans text-2xl font-semibold tracking-tight">
             hackr<span className="text-accent">.</span>
           </p>
         </div>
-        <div className="fade-up">
+        <div className="dither-in-item">
           <p className="font-mono text-[0.625rem] tracking-[0.3em] text-accent uppercase">
             projects
           </p>
@@ -82,7 +64,7 @@ export function Footer() {
             ))}
           </ul>
         </div>
-        <div className="fade-up">
+        <div className="dither-in-item">
           <p className="font-mono text-[0.625rem] tracking-[0.3em] text-accent uppercase">
             elsewhere
           </p>

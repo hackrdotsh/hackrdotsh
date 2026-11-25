@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { CommitGraph } from "~/components/commit-graph";
 import { DitherHover } from "~/components/dither-hover";
 import { ScrambleText } from "~/components/scramble-text";
+import { ditherIn, prepareDitherIn } from "~/lib/dither-in";
 import { onPageReady } from "~/lib/page-ready";
 import { contactLinks, projects } from "~/lib/site-data";
 import { cn } from "~/lib/util";
@@ -22,7 +23,7 @@ const aboutParagraphs = [
 
 function SectionHeading({ index, title }: { index: string; title: string }) {
   return (
-    <div className="fade-up flex items-baseline gap-4">
+    <div className="dither-in-item flex items-baseline gap-4">
       <span className="font-mono text-xs text-accent">{index}</span>
       <h2 className="font-sans text-xl font-semibold tracking-tight text-foreground">
         <ScrambleText text={title} trigger="view" />
@@ -95,7 +96,7 @@ export function Home() {
           container,
         );
 
-        gsap.set(heroMeta, { opacity: 0, y: 16 });
+        prepareDitherIn(heroMeta);
 
         const cleanup = onPageReady(() => {
           const nameEl = container.querySelector(".hero-name");
@@ -115,36 +116,22 @@ export function Home() {
               { once: true },
             );
           });
-          tl.to(
-            heroMeta,
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.7,
-              stagger: 0.08,
-              ease: "power3.out",
-            },
-            "-=0.6",
-          );
+          tl.add(() => {
+            for (const [i, el] of heroMeta.entries()) {
+              ditherIn(el, { delay: i * 0.08 });
+            }
+          }, "-=0.6");
         });
 
-        const fadeUps = gsap.utils.toArray<HTMLElement>(".fade-up", container);
-        for (const el of fadeUps) {
-          gsap.fromTo(
-            el,
-            { opacity: 0, y: 24 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: el,
-                start: "top 88%",
-                once: true,
-              },
-            },
-          );
+        const ditherIns = gsap.utils.toArray<HTMLElement>(
+          ".dither-in-item",
+          container,
+        );
+        prepareDitherIn(ditherIns);
+        for (const el of ditherIns) {
+          ditherIn(el, {
+            scrollTrigger: { trigger: el, start: "top 88%", once: true },
+          });
         }
 
         return cleanup;
@@ -152,7 +139,6 @@ export function Home() {
 
       mm.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(".reveal-line > span", { y: 0 });
-        gsap.set(".hero-meta, .fade-up", { opacity: 1, y: 0 });
       });
     },
     { scope: containerRef },
@@ -214,7 +200,7 @@ export function Home() {
               {aboutParagraphs.map((p) => (
                 <p
                   key={p.slice(0, 24)}
-                  className="fade-up text-[0.9375rem] leading-relaxed text-muted-foreground"
+                  className="dither-in-item text-[0.9375rem] leading-relaxed text-muted-foreground"
                 >
                   {p}
                 </p>
@@ -234,7 +220,7 @@ export function Home() {
                   href={p.href}
                   target={p.href ? "_blank" : undefined}
                   rel={p.href ? "noopener noreferrer" : undefined}
-                  className="fade-up row-hover group relative block border-t hairline py-8 sm:py-10"
+                  className="dither-in-item row-hover group relative block border-t hairline py-8 sm:py-10"
                 >
                   <DitherHover />
                   <div className="relative flex items-baseline gap-5 sm:gap-8">
