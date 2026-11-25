@@ -76,7 +76,7 @@ export const PageLoader = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div>
-      {children}
+      {mounted && children}
       <div
         ref={overlayRef}
         aria-hidden="true"
