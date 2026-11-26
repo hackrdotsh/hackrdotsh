@@ -40,6 +40,7 @@ import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
 import { Textarea } from "~/components/ui/textarea";
 import { parseResume, type ResumeData } from "~/lib/resume";
+import { useResumePhone } from "~/lib/resume-phone";
 import { cn } from "~/lib/utils";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -451,6 +452,7 @@ export default function EditResumePage() {
   const jobPostings = useQuery(api.jobPostings.list);
   const updateResume = useMutation(api.resumes.update);
   const removeResume = useMutation(api.resumes.remove);
+  const [phone] = useResumePhone();
 
   const [draft, setDraft] = useState<ResumeData>(blankResume);
   const [selectedJobPosting, setSelectedJobPosting] =
@@ -600,11 +602,12 @@ export default function EditResumePage() {
         meta={new Date(resume.createdAt).toLocaleDateString("en-CA")}
       >
         {resume.isFrontFacing && <Pill tone="live">Live</Pill>}
-        <ResumePreviewButton data={draft} />
+        <ResumePreviewButton data={draft} phone={phone} />
         <DownloadResumeButton
           data={draft}
           company={selectedJp?.company}
           position={selectedJp?.title}
+          phone={phone}
         />
         <Button
           variant="destructive"

@@ -24,11 +24,12 @@ const BULLET_INDENT = 4;
 const NAME = "Mohammad Al-Ahdal";
 const HEADLINE = "Software Developer";
 
-const LOCATION = "Calgary, AB";
+const LOCATION = "Calgary, AB (open to relocation)";
+
+type ContactItem = { label: string; url?: string };
 
 /** Contact details in the header. The location is plain text; the rest link. */
-const contactItems: { label: string; url?: string }[] = [
-  { label: LOCATION },
+const publicContactItems: ContactItem[] = [
   { label: "hello@hackr.sh", url: "mailto:hello@hackr.sh" },
   {
     label: "linkedin.com/in/mohammadalahdal",
@@ -89,7 +90,20 @@ function groupSkills(skills: ResumeData["skills"]) {
   }));
 }
 
-export async function generateResumePDF(data: ResumeData): Promise<jsPDF> {
+export async function generateResumePDF(
+  data: ResumeData,
+  /** A phone number is only passed for PDFs made in the admin area. */
+  options: { phone?: string } = {},
+): Promise<jsPDF> {
+  const phone = options.phone?.trim();
+  const contactItems: ContactItem[] = [
+    { label: LOCATION },
+    ...(phone
+      ? [{ label: phone, url: `tel:${phone.replace(/[^\d+]/g, "")}` }]
+      : []),
+    ...publicContactItems,
+  ];
+
   const doc = new jsPDF({ unit: "mm", format: "letter" });
 
   const [regularFont, boldFont] = await Promise.all([
@@ -162,19 +176,27 @@ export async function generateResumePDF(data: ResumeData): Promise<jsPDF> {
     y += 5.5;
 
     setType("normal", 9.5, MUTED);
+    const separatorWidth = doc.getTextWidth(CONTACT_SEPARATOR);
     let x = MARGIN;
-    contactItems.forEach((item, index) => {
+    for (const item of contactItems) {
+      const width = doc.getTextWidth(item.label);
+      const startsLine = x === MARGIN;
+      // Wrap to a second line when an item would run past the margin.
+      if (!startsLine && x + separatorWidth + width > RIGHT_EDGE) {
+        x = MARGIN;
+        y += LINE_HEIGHT;
+      }
+      if (x !== MARGIN) {
+        doc.text(CONTACT_SEPARATOR, x, y);
+        x += separatorWidth;
+      }
       if (item.url) {
         doc.textWithLink(item.label, x, y, { url: item.url });
       } else {
         doc.text(item.label, x, y);
       }
-      x += doc.getTextWidth(item.label);
-      if (index < contactItems.length - 1) {
-        doc.text(CONTACT_SEPARATOR, x, y);
-        x += doc.getTextWidth(CONTACT_SEPARATOR);
-      }
-    });
+      x += width;
+    }
     y += 3;
   };
 

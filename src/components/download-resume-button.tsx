@@ -10,6 +10,8 @@ interface DownloadResumeButtonProps {
   data: ResumeData;
   company?: string;
   position?: string;
+  /** Printed in the header. Only passed in the admin area. */
+  phone?: string;
 }
 
 const buildResumeFilename = (company?: string, position?: string) => {
@@ -24,11 +26,12 @@ export const DownloadResumeButton = ({
   data,
   company,
   position,
+  phone,
 }: DownloadResumeButtonProps) => {
   const handleClick = useCallback(async () => {
-    const doc = await generateResumePDF(data);
+    const doc = await generateResumePDF(data, { phone });
     doc.save(buildResumeFilename(company, position));
-  }, [data, company, position]);
+  }, [data, company, position, phone]);
 
   return (
     <Button

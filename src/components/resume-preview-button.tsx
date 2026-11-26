@@ -14,14 +14,21 @@ import type { ResumeData } from "~/lib/resume";
 
 /** Opens the resume as the PDF that the download button would save, so the
     preview is exactly what gets sent. */
-export function ResumePreviewButton({ data }: { data: ResumeData }) {
+export function ResumePreviewButton({
+  data,
+  phone,
+}: {
+  data: ResumeData;
+  /** Printed in the header. Only passed in the admin area. */
+  phone?: string;
+}) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const open = async () => {
     setLoading(true);
     try {
-      const doc = await generateResumePDF(data);
+      const doc = await generateResumePDF(data, { phone });
       setPdfUrl(URL.createObjectURL(doc.output("blob")));
     } finally {
       setLoading(false);
