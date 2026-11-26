@@ -15,9 +15,19 @@ import { DownloadResumeButton } from "~/components/download-resume-button";
 import { ResumePreviewButton } from "~/components/resume-preview-button";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Tag } from "~/components/ui/tag";
 import { parseResume } from "~/lib/resume";
 import { useResumePhone } from "~/lib/resume-phone";
 import { api } from "../../../../convex/_generated/api";
+
+/** A tag that shortens with an ellipsis instead of overflowing its row. */
+const jobTagClass = "block truncate py-0.5";
+
+function postingLabel(posting: { title: string; company: string }) {
+  return posting.company
+    ? `${posting.title} @ ${posting.company}`
+    : posting.title;
+}
 
 export default function AdminResumesPage() {
   const resumes = useQuery(api.resumes.list);
@@ -76,44 +86,44 @@ export default function AdminResumesPage() {
             const date = new Date(resume.createdAt).toLocaleDateString("en-CA");
 
             return (
-              <li key={resume._id} className="row flex items-start gap-4">
+              <li key={resume._id} className="row">
                 <Link
                   href={`/admin/resumes/${resume._id}`}
                   className="row-cover"
                   aria-label={`Edit resume from ${date}`}
                 />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2">
                     <span className="pixel-11 text-faint">{date}</span>
                     {resume.isFrontFacing && <Pill tone="live">Live</Pill>}
-                    {posting && (
-                      <Link
-                        href={`/admin/job-postings/${posting._id}`}
-                        className="row-control hover:brightness-125"
-                      >
-                        <Pill>
-                          {posting.title}
-                          {posting.company ? ` @ ${posting.company}` : ""}
-                        </Pill>
-                      </Link>
-                    )}
                   </div>
-                  {data?.profile && (
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                      {data.profile}
-                    </p>
+                  {data && (
+                    <span className="row-control flex shrink-0 gap-3 pr-1 pb-1">
+                      <ResumePreviewButton data={data} phone={phone} />
+                      <DownloadResumeButton
+                        data={data}
+                        company={posting?.company}
+                        position={posting?.title}
+                        phone={phone}
+                      />
+                    </span>
                   )}
                 </div>
-                {data && (
-                  <span className="row-control flex shrink-0 gap-3 pr-1 pb-1">
-                    <ResumePreviewButton data={data} phone={phone} />
-                    <DownloadResumeButton
-                      data={data}
-                      company={posting?.company}
-                      position={posting?.title}
-                      phone={phone}
-                    />
-                  </span>
+                {/* The job tag gets the full width of the row and shortens
+                    with an ellipsis; beside the buttons it ran under them. */}
+                {posting && (
+                  <Link
+                    href={`/admin/job-postings/${posting._id}`}
+                    title={postingLabel(posting)}
+                    className="row-control mt-2 block w-fit max-w-full hover:brightness-125"
+                  >
+                    <Tag className={jobTagClass}>{postingLabel(posting)}</Tag>
+                  </Link>
+                )}
+                {data?.profile && (
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                    {data.profile}
+                  </p>
                 )}
               </li>
             );

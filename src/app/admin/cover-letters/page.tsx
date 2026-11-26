@@ -7,11 +7,11 @@ import {
   AdminPageHeader,
   AdminShell,
   EmptyState,
-  Pill,
   StatusText,
 } from "~/components/admin/ui";
 import { DownloadCoverLetterButton } from "~/components/download-cover-letter-button";
 import { Button } from "~/components/ui/button";
+import { Tag } from "~/components/ui/tag";
 import { api } from "../../../../convex/_generated/api";
 
 export default function AdminCoverLettersPage() {
@@ -52,36 +52,37 @@ export default function AdminCoverLettersPage() {
             );
 
             return (
-              <li key={coverLetter._id} className="row flex items-start gap-4">
+              <li key={coverLetter._id} className="row">
                 <Link
                   href={`/admin/cover-letters/${coverLetter._id}`}
                   className="row-cover"
                   aria-label={`Edit cover letter from ${date}`}
                 />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                    <span className="pixel-11 text-faint">{date}</span>
-                    {posting && (
-                      <Pill>
-                        {posting.title}
-                        {posting.company ? ` @ ${posting.company}` : ""}
-                      </Pill>
-                    )}
-                  </div>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="pixel-11 pt-2 text-faint">{date}</span>
                   {coverLetter.content && (
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                      {coverLetter.content}
-                    </p>
+                    <span className="row-control shrink-0 pr-1 pb-1">
+                      <DownloadCoverLetterButton
+                        content={coverLetter.content}
+                        jobTitle={posting?.title}
+                        company={posting?.company}
+                      />
+                    </span>
                   )}
                 </div>
+                {posting && (
+                  <Tag
+                    title={`${posting.title}${posting.company ? ` @ ${posting.company}` : ""}`}
+                    className="mt-2 block w-fit max-w-full truncate py-0.5"
+                  >
+                    {posting.title}
+                    {posting.company ? ` @ ${posting.company}` : ""}
+                  </Tag>
+                )}
                 {coverLetter.content && (
-                  <span className="row-control shrink-0 pr-1 pb-1">
-                    <DownloadCoverLetterButton
-                      content={coverLetter.content}
-                      jobTitle={posting?.title}
-                      company={posting?.company}
-                    />
-                  </span>
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                    {coverLetter.content}
+                  </p>
                 )}
               </li>
             );
