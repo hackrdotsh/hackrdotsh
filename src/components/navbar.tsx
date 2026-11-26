@@ -181,12 +181,10 @@ export function Navbar() {
         >
           <Link
             href="/"
-            className="group flex items-baseline gap-1.5 font-mono text-sm tracking-[0.15em] uppercase select-none"
+            aria-label="hackr, home"
+            className="font-sans text-2xl font-semibold tracking-tight text-foreground select-none"
           >
-            <span className="text-foreground transition-colors group-hover:text-accent">
-              <ScrambleText text="hackr" trigger="ready" delay={0.4} />
-            </span>
-            <span className="inline-block size-1.5 translate-y-[-1px] bg-accent" />
+            hackr<span className="text-accent">.</span>
           </Link>
 
           {/* Links are ghost buttons; below 1024px they would run into the
