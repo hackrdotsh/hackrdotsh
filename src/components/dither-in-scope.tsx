@@ -84,7 +84,9 @@ export function DitherInScope({ children }: { children: React.ReactNode }) {
           ditherIn(element, Math.min(index * STAGGER, MAX_STAGGER));
         });
       },
-      { rootMargin: "0px 0px -8% 0px" },
+      // No inset: an element at the very bottom of the first screen, such as
+      // the home page's scroll hint, has to come in without any scrolling.
+      { rootMargin: "0px" },
     );
 
     const watch = (element: HTMLElement) => {
