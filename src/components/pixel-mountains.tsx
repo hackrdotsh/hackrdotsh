@@ -116,7 +116,8 @@ const trees: { x: number; y: number }[] = [];
 
 export function PixelMountains({ className }: { className?: string }) {
   return (
-    <div className={className}>
+    // The scene dithers in with the rest of the page.
+    <div data-dither-in className={className}>
       <svg
         viewBox={`0 0 ${COLS} ${ROWS}`}
         preserveAspectRatio="xMidYMax slice"
