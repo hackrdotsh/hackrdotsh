@@ -1,5 +1,9 @@
 import jsPDF from "jspdf";
-import type { ResumeData } from "~/lib/resume";
+import {
+  type EmphasisSegment,
+  parseEmphasis,
+  type ResumeData,
+} from "~/lib/resume";
 
 // The layout is built for resume parsers first: one column drawn top to
 // bottom in reading order, standard section names, every heading and line
@@ -27,6 +31,10 @@ const HEADLINE = "Software Developer";
 const LOCATION = "Calgary, AB (open to relocation)";
 
 type ContactItem = { label: string; url?: string };
+
+/** A stretch of text in one weight. `attached` means no space separates it
+    from the run before it. */
+type StyledRun = EmphasisSegment & { attached: boolean };
 
 /** Contact details in the header. The location is plain text; the rest link. */
 const publicContactItems: ContactItem[] = [
@@ -142,12 +150,64 @@ export async function generateResumePDF(
     }
   };
 
-  const writeParagraph = (text: string, x: number, width: number) => {
+  /** Breaks text with bold markers into lines of styled runs. Words are
+      measured in the weight they will be drawn in. */
+  const layOutLines = (text: string, width: number) => {
     setType("normal", BODY_SIZE, TEXT);
-    const lines: string[] = doc.splitTextToSize(text, width);
+    const spaceWidth = doc.getTextWidth(" ");
+
+    const lines: StyledRun[][] = [[]];
+    let used = 0;
+    let spaceBefore = false;
+
+    for (const segment of parseEmphasis(text)) {
+      setType(segment.bold ? "bold" : "normal", BODY_SIZE, TEXT);
+      for (const part of segment.text.match(/\S+|\s+/g) ?? []) {
+        if (part.trim() === "") {
+          spaceBefore = true;
+          continue;
+        }
+
+        const wordWidth = doc.getTextWidth(part);
+        // Punctuation right after a bold phrase has no space before it, so
+        // it stays attached to that phrase and never starts a line.
+        const attached = !spaceBefore && used > 0;
+        const gap = used === 0 || attached ? 0 : spaceWidth;
+        if (!attached && used > 0 && used + gap + wordWidth > width) {
+          lines.push([]);
+          used = 0;
+        }
+
+        const line = lines[lines.length - 1];
+        const last = line[line.length - 1];
+        if (last && last.bold === segment.bold) {
+          // Words in one weight stay one run, so the PDF holds whole phrases.
+          last.text += attached ? part : ` ${part}`;
+        } else {
+          line.push({ text: part, bold: segment.bold, attached });
+        }
+        used += (used === 0 || attached ? 0 : spaceWidth) + wordWidth;
+        spaceBefore = false;
+      }
+    }
+    return { lines, spaceWidth };
+  };
+
+  const drawLine = (runs: StyledRun[], x: number, spaceWidth: number) => {
+    let cursor = x;
+    runs.forEach((run, index) => {
+      if (index > 0 && !run.attached) cursor += spaceWidth;
+      setType(run.bold ? "bold" : "normal", BODY_SIZE, TEXT);
+      doc.text(run.text, cursor, y);
+      cursor += doc.getTextWidth(run.text);
+    });
+  };
+
+  const writeParagraph = (text: string, x: number, width: number) => {
+    const { lines, spaceWidth } = layOutLines(text, width);
     for (const line of lines) {
       ensureRoom(LINE_HEIGHT);
-      doc.text(line, x, y);
+      drawLine(line, x, spaceWidth);
       y += LINE_HEIGHT;
     }
   };
@@ -254,15 +314,18 @@ export async function generateResumePDF(
         .flatMap((item) => item.split("\n"))
         .filter((item) => item.trim() !== "");
       for (const bullet of bullets) {
-        const lines: string[] = doc.splitTextToSize(
+        const { lines, spaceWidth } = layOutLines(
           bullet,
           CONTENT_WIDTH - BULLET_INDENT,
         );
         // A bullet never splits across pages.
         ensureRoom(lines.length * LINE_HEIGHT);
         lines.forEach((line, index) => {
-          if (index === 0) doc.text("•", MARGIN, y);
-          doc.text(line, MARGIN + BULLET_INDENT, y);
+          if (index === 0) {
+            setType("normal", BODY_SIZE, TEXT);
+            doc.text("•", MARGIN, y);
+          }
+          drawLine(line, MARGIN + BULLET_INDENT, spaceWidth);
           y += LINE_HEIGHT;
         });
       }

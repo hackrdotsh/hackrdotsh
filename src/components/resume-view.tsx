@@ -1,5 +1,6 @@
 "use client";
 
+import { Emphasis } from "~/components/emphasis";
 import { Reveal } from "~/components/reveal";
 import { ScrambleText } from "~/components/scramble-text";
 import { Tag } from "~/components/ui/tag";
@@ -32,7 +33,7 @@ export function ResumeView({ data }: { data: ResumeData }) {
       <section>
         <SectionHeading index="01" title="profile" />
         <p className="reveal-item mt-8 max-w-2xl text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-base">
-          {data.profile}
+          <Emphasis text={data.profile} />
         </p>
       </section>
 
@@ -66,7 +67,9 @@ export function ResumeView({ data }: { data: ResumeData }) {
                           className="mt-[0.55em] size-1 shrink-0 bg-accent"
                           aria-hidden="true"
                         />
-                        {item}
+                        <span>
+                          <Emphasis text={item} />
+                        </span>
                       </li>
                     ))}
                   </ul>

@@ -59,3 +59,22 @@ export function parseResume(content: string): ResumeData | null {
     }),
   };
 }
+
+export type EmphasisSegment = { text: string; bold: boolean };
+
+/**
+ * Splits resume text on bold markers, written as `**70%**` or `<b>70%</b>`:
+ * `Cut CI time by **70%**` gives a plain segment and a bold one. An unclosed
+ * marker is left in the text as typed.
+ */
+export function parseEmphasis(text: string): EmphasisSegment[] {
+  // <b> and <strong> tags mean the same as the markers.
+  const marked = text.replace(/<\/?(?:b|strong)>/gi, "**");
+  const parts = marked.split("**");
+  // An even number of parts means a marker was never closed.
+  if (parts.length % 2 === 0) return [{ text, bold: false }];
+
+  return parts
+    .map((part, index) => ({ text: part, bold: index % 2 === 1 }))
+    .filter((segment) => segment.text !== "");
+}

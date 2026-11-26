@@ -203,7 +203,7 @@ function ExperienceEditor({
         </Field>
       </div>
 
-      <Field label="Bullets, one per line">
+      <Field label="Bullets, one per line. **text** or <b>text</b> is bold">
         <Textarea
           value={description}
           onChange={(e) => {
