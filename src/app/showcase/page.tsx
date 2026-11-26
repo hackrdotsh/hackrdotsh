@@ -2,7 +2,6 @@ import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import { DitherHover } from "~/components/dither-hover";
 import { PageHeader } from "~/components/page-header";
-import { Reveal } from "~/components/reveal";
 import { generatePageMetadata } from "~/lib/metadata";
 
 export const metadata: Metadata = generatePageMetadata({
@@ -76,14 +75,14 @@ export default function Showcase() {
           description="A collection of projects I've built — from communications platforms to developer tools."
         />
 
-        <Reveal className="mt-16 sm:mt-20">
+        <div className="mt-16 sm:mt-20">
           {projects.map((project, i) => (
             <a
               key={project.title}
               href={project.link}
               target={project.link ? "_blank" : undefined}
               rel={project.link ? "noopener noreferrer" : undefined}
-              className="reveal-item row-hover group relative block border-t hairline py-8 sm:py-10"
+              className="row-hover group relative block border-t hairline py-8 sm:py-10"
             >
               <DitherHover />
               <div className="relative flex items-baseline gap-5 sm:gap-8">
@@ -102,8 +101,8 @@ export default function Showcase() {
               </div>
             </a>
           ))}
-          <div className="reveal-item border-t hairline" />
-        </Reveal>
+          <div className="border-t hairline" />
+        </div>
       </div>
     </main>
   );

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DitherHover } from "~/components/dither-hover";
 import { PageHeader } from "~/components/page-header";
-import { Reveal } from "~/components/reveal";
 import { getPostMetaList } from "~/lib/blog";
 import { generatePageMetadata } from "~/lib/metadata";
 
@@ -26,12 +25,12 @@ export default function Blog() {
           description="Thoughts on software, NixOS, homelabbing, and other things."
         />
 
-        <Reveal className="mt-16 sm:mt-20">
+        <div className="mt-16 sm:mt-20">
           {posts.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="reveal-item row-hover group relative block border-t hairline py-7 sm:py-8"
+              className="row-hover group relative block border-t hairline py-7 sm:py-8"
             >
               <DitherHover />
               <div className="relative flex flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-10">
@@ -60,8 +59,8 @@ export default function Blog() {
               </div>
             </Link>
           ))}
-          <div className="reveal-item border-t hairline" />
-        </Reveal>
+          <div className="border-t hairline" />
+        </div>
       </div>
     </main>
   );

@@ -4,7 +4,6 @@ import { GithubLogo, Trash } from "@phosphor-icons/react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Reveal } from "~/components/reveal";
 import { Button } from "~/components/ui/button";
 import { Tag } from "~/components/ui/tag";
 import { Textarea } from "~/components/ui/textarea";
@@ -180,7 +179,7 @@ export function Guestbook() {
         )}
 
         {entries && entries.length > 0 && (
-          <Reveal>
+          <div>
             <ul>
               {entries.map((entry) => {
                 const canDelete =
@@ -188,7 +187,7 @@ export function Guestbook() {
                 return (
                   <li
                     key={entry._id}
-                    className="reveal-item group border-t hairline py-5 last:border-b"
+                    className="group border-t hairline py-5 last:border-b"
                   >
                     <div className="flex items-start gap-4">
                       <Avatar name={entry.name} image={entry.image} />
@@ -232,7 +231,7 @@ export function Guestbook() {
                 );
               })}
             </ul>
-          </Reveal>
+          </div>
         )}
       </div>
     </div>

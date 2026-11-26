@@ -212,16 +212,6 @@
   border-color: var(--border);
 }
 
-.reveal-line {
-  display: block;
-  overflow: hidden;
-}
-
-.reveal-line > span {
-  display: block;
-  transform: translateY(110%);
-}
-
 .link-sweep {
   position: relative;
 }

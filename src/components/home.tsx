@@ -1,19 +1,13 @@
 "use client";
 
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CommitGraph } from "~/components/commit-graph";
 import { DitherHover } from "~/components/dither-hover";
 import { ScrambleText } from "~/components/scramble-text";
-import { ditherIn, prepareDitherIn } from "~/lib/dither-in";
 import { onPageReady } from "~/lib/page-ready";
 import { contactLinks, projects } from "~/lib/site-data";
 import { cn } from "~/lib/util";
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const aboutParagraphs = [
   "I also dabble in a lot of homelabbing projects — currently self-hosting dokploy, pyrodactyl, and home assistant.",
@@ -23,7 +17,7 @@ const aboutParagraphs = [
 
 function SectionHeading({ index, title }: { index: string; title: string }) {
   return (
-    <div className="dither-in-item flex items-baseline gap-4">
+    <div className="flex items-baseline gap-4">
       <span className="font-mono text-xs text-accent">{index}</span>
       <h2 className="font-sans text-xl font-semibold tracking-tight text-foreground">
         <ScrambleText text={title} trigger="view" />
@@ -79,70 +73,29 @@ export function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useGSAP(
-    () => {
-      const container = containerRef.current;
-      if (!container) return;
+  // The name flickers once after the heading has dithered in.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      const mm = gsap.matchMedia();
-
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const heroLines = gsap.utils.toArray<HTMLElement>(
-          ".reveal-line > span",
-          container,
+    let timer = 0;
+    const cancelReady = onPageReady(() => {
+      timer = window.setTimeout(() => {
+        const name = containerRef.current?.querySelector(".hero-name");
+        if (!name) return;
+        name.classList.add("glitching");
+        name.addEventListener(
+          "animationend",
+          () => name.classList.remove("glitching"),
+          { once: true },
         );
-        const heroMeta = gsap.utils.toArray<HTMLElement>(
-          ".hero-meta",
-          container,
-        );
+      }, 900);
+    });
 
-        prepareDitherIn(heroMeta);
-
-        const cleanup = onPageReady(() => {
-          const nameEl = container.querySelector(".hero-name");
-          const tl = gsap.timeline({ delay: 0.1 });
-          tl.to(heroLines, {
-            y: 0,
-            duration: 1,
-            stagger: 0.09,
-            ease: "power4.out",
-          });
-          tl.add(() => {
-            if (!nameEl) return;
-            nameEl.classList.add("glitching");
-            nameEl.addEventListener(
-              "animationend",
-              () => nameEl.classList.remove("glitching"),
-              { once: true },
-            );
-          });
-          tl.add(() => {
-            for (const [i, el] of heroMeta.entries()) {
-              ditherIn(el, { delay: i * 0.08 });
-            }
-          }, "-=0.6");
-        });
-
-        const ditherIns = gsap.utils.toArray<HTMLElement>(
-          ".dither-in-item",
-          container,
-        );
-        prepareDitherIn(ditherIns);
-        for (const el of ditherIns) {
-          ditherIn(el, {
-            scrollTrigger: { trigger: el, start: "top 88%", once: true },
-          });
-        }
-
-        return cleanup;
-      });
-
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(".reveal-line > span", { y: 0 });
-      });
-    },
-    { scope: containerRef },
-  );
+    return () => {
+      cancelReady();
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   return (
     <div ref={containerRef}>
@@ -156,7 +109,7 @@ export function Home() {
           {/* The text sits over the graph without taking the pointer, so the
               squares around it stay hoverable. */}
           <div className="pointer-events-none relative z-10 mx-auto w-full max-w-5xl">
-            <p className="hero-meta label">
+            <p className="label">
               <span className="label-index">{"// "}</span>
               <ScrambleText
                 text="mohammad al-ahdal"
@@ -165,22 +118,23 @@ export function Home() {
               />
             </p>
             <h1 className="mt-6 font-sans text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-semibold tracking-[-0.04em]">
-              <span className="reveal-line">
-                <span>Hey, I'm</span>
-              </span>
-              <span className="reveal-line">
+              <span className="block">Hey, I'm</span>
+              <span className="block">
                 <span className="hero-name inline-block">
                   hackr<span className="text-accent">.</span>
                 </span>
               </span>
             </h1>
-            <p className="hero-meta mt-10 max-w-md text-[0.9375rem] leading-relaxed text-muted-foreground sm:mt-14 sm:text-base">
+            <p className="mt-10 max-w-md text-[0.9375rem] leading-relaxed text-muted-foreground sm:mt-14 sm:text-base">
               I'm a software developer building most things with TypeScript,
               React, and Tailwind. Currently on my journey to learn Rust.
             </p>
           </div>
 
-          <div className="hero-meta absolute inset-x-0 bottom-10 flex justify-center">
+          <div
+            data-dither-in
+            className="absolute inset-x-0 bottom-10 flex justify-center"
+          >
             <span
               className={cn(
                 "font-mono text-[0.625rem] tracking-[0.2em] text-muted-foreground uppercase select-none transition-opacity duration-500",
@@ -200,7 +154,7 @@ export function Home() {
               {aboutParagraphs.map((p) => (
                 <p
                   key={p.slice(0, 24)}
-                  className="dither-in-item text-[0.9375rem] leading-relaxed text-muted-foreground"
+                  className="text-[0.9375rem] leading-relaxed text-muted-foreground"
                 >
                   {p}
                 </p>
@@ -220,7 +174,7 @@ export function Home() {
                   href={p.href}
                   target={p.href ? "_blank" : undefined}
                   rel={p.href ? "noopener noreferrer" : undefined}
-                  className="dither-in-item row-hover group relative block border-t hairline py-8 sm:py-10"
+                  className="row-hover group relative block border-t hairline py-8 sm:py-10"
                 >
                   <DitherHover />
                   <div className="relative flex items-baseline gap-5 sm:gap-8">

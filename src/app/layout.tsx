@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DitherInScope } from "~/components/dither-in-scope";
 import { Footer } from "~/components/footer";
 import { Navbar } from "~/components/navbar";
 import { PageLoader } from "~/components/page-loader";
@@ -104,10 +105,12 @@ export default async function RootLayout({
         <Providers initialToken={token}>
           <PageLoader>
             <Navbar />
-            <div className="flex min-h-svh flex-col">
-              <div className="relative z-10 flex-1">{children}</div>
-              <Footer />
-            </div>
+            <DitherInScope>
+              <div className="flex min-h-svh flex-col">
+                <div className="relative z-10 flex-1">{children}</div>
+                <Footer />
+              </div>
+            </DitherInScope>
           </PageLoader>
         </Providers>
       </body>

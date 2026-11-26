@@ -3,7 +3,6 @@
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
 import { DitherHover } from "~/components/dither-hover";
-import { Reveal } from "~/components/reveal";
 import { api } from "../../../convex/_generated/api";
 
 function safeHostname(url: string): string | null {
@@ -56,7 +55,7 @@ export function VouchesGrid() {
   }
 
   return (
-    <Reveal className="mt-16 sm:mt-20">
+    <div className="mt-16 sm:mt-20">
       <div className="grid grid-cols-1 gap-px border hairline bg-border sm:grid-cols-2">
         {vouches.map((vouch) => {
           const href = safeUrl(vouch.url);
@@ -67,7 +66,7 @@ export function VouchesGrid() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="reveal-item group relative block bg-background px-6 py-6 transition-colors duration-300 hover:bg-foreground/[0.03]"
+              className="group relative block bg-background px-6 py-6 transition-colors duration-300 hover:bg-foreground/[0.03]"
             >
               <DitherHover />
               <div className="relative flex items-center gap-4">
@@ -86,6 +85,6 @@ export function VouchesGrid() {
           );
         })}
       </div>
-    </Reveal>
+    </div>
   );
 }

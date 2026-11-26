@@ -1,14 +1,13 @@
 "use client";
 
 import { Emphasis } from "~/components/emphasis";
-import { Reveal } from "~/components/reveal";
 import { ScrambleText } from "~/components/scramble-text";
 import { Tag } from "~/components/ui/tag";
 import type { ResumeData } from "~/lib/resume";
 
 function SectionHeading({ index, title }: { index: string; title: string }) {
   return (
-    <div className="reveal-item flex items-baseline gap-4">
+    <div className="flex items-baseline gap-4">
       <span className="font-mono text-xs text-accent">{index}</span>
       <h2 className="font-sans text-xl font-semibold tracking-tight text-foreground">
         <ScrambleText text={title} trigger="view" />
@@ -28,11 +27,11 @@ export function ResumeView({ data }: { data: ResumeData }) {
   }, {});
 
   return (
-    <Reveal className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
+    <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
       {/* profile */}
       <section>
         <SectionHeading index="01" title="profile" />
-        <p className="reveal-item mt-8 max-w-2xl text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-base">
+        <p className="mt-8 max-w-2xl text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-base">
           <Emphasis text={data.profile} />
         </p>
       </section>
@@ -44,7 +43,7 @@ export function ResumeView({ data }: { data: ResumeData }) {
           {data.experiences.map((exp) => (
             <div
               key={`${exp.company}-${exp.years.start}`}
-              className="reveal-item border-t hairline py-8 last:border-b sm:py-10"
+              className="border-t hairline py-8 last:border-b sm:py-10"
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                 <h3 className="font-sans text-lg font-semibold tracking-tight text-foreground sm:text-xl">
@@ -85,7 +84,7 @@ export function ResumeView({ data }: { data: ResumeData }) {
         <SectionHeading index="03" title="skills" />
         <div className="mt-8 space-y-8">
           {Object.entries(skillsByCategory).map(([category, skills]) => (
-            <div key={category} className="reveal-item">
+            <div key={category}>
               <h3 className="label">{category}</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {skills.map((skill) => (
@@ -106,7 +105,7 @@ export function ResumeView({ data }: { data: ResumeData }) {
       {data.education && (
         <section>
           <SectionHeading index="04" title="education" />
-          <div className="reveal-item mt-8">
+          <div className="mt-8">
             <h3 className="font-sans text-lg font-semibold tracking-tight text-foreground">
               {data.education.degreeName}
             </h3>
@@ -120,6 +119,6 @@ export function ResumeView({ data }: { data: ResumeData }) {
           </div>
         </section>
       )}
-    </Reveal>
+    </div>
   );
 }
