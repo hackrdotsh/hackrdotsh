@@ -133,7 +133,9 @@ export function Home() {
 
           <div
             data-dither-in
-            className="absolute inset-x-0 bottom-10 flex justify-center"
+            // The strip spans the full width over the commit graph, so it
+            // must not take the pointer from it.
+            className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center"
           >
             <span
               className={cn(
