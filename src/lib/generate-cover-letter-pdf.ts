@@ -1,9 +1,8 @@
 import jsPDF from "jspdf";
+import { PDF_ACCENT, PDF_BRAND } from "~/lib/pdf-colors";
 
-const ACCENT = "#8a6414";
 const TEXT = "#1a1a1a";
 const MUTED = "#6b7280";
-const LIGHT = "#f3f4f6";
 const PAGE_WIDTH = 210;
 const MARGIN = 14;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
@@ -84,7 +83,7 @@ export async function generateCoverLetterPDF(
   // Header
   font("bold");
   doc.setFontSize(24);
-  doc.setTextColor(...hexToRgb(ACCENT));
+  doc.setTextColor(...hexToRgb(PDF_ACCENT));
   doc.text("Mohammad Al-Ahdal", MARGIN, y);
   y += 6;
 
@@ -107,7 +106,7 @@ export async function generateCoverLetterPDF(
 
   font("bold");
   doc.setFontSize(7.5);
-  doc.setTextColor(...hexToRgb(ACCENT));
+  doc.setTextColor(...hexToRgb(PDF_ACCENT));
   let linkX = MARGIN;
   for (let i = 0; i < links.length; i++) {
     const link = links[i];
@@ -118,14 +117,14 @@ export async function generateCoverLetterPDF(
       const sep = "  ·  ";
       doc.setTextColor(...hexToRgb(MUTED));
       doc.text(sep, linkX, y);
-      doc.setTextColor(...hexToRgb(ACCENT));
+      doc.setTextColor(...hexToRgb(PDF_ACCENT));
       linkX += doc.getTextWidth(sep);
     }
   }
   y += 3;
 
   // Divider
-  doc.setDrawColor(...hexToRgb(LIGHT));
+  doc.setDrawColor(...hexToRgb(PDF_BRAND));
   doc.setLineWidth(0.3);
   doc.line(0, y, PAGE_WIDTH, y);
   y += 8;
@@ -134,7 +133,7 @@ export async function generateCoverLetterPDF(
   if (data.jobTitle || data.company) {
     font("bold");
     doc.setFontSize(11);
-    doc.setTextColor(...hexToRgb(ACCENT));
+    doc.setTextColor(...hexToRgb(PDF_ACCENT));
     const titleParts: string[] = [];
     if (data.jobTitle) titleParts.push(data.jobTitle);
     if (data.company) titleParts.push(data.company);

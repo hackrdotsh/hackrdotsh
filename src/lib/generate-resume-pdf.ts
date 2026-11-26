@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { PDF_ACCENT, PDF_BRAND } from "~/lib/pdf-colors";
 import {
   type EmphasisSegment,
   parseEmphasis,
@@ -9,10 +10,8 @@ import {
 // bottom in reading order, standard section names, every heading and line
 // written as a single string, and skills as plain text.
 
-const ACCENT = "#8a6414";
 const TEXT = "#1a1a1a";
 const MUTED = "#4b5563";
-const RULE = "#d1d5db";
 
 // US Letter, in millimetres.
 const PAGE_WIDTH = 215.9;
@@ -216,10 +215,10 @@ export async function generateResumePDF(
     y += 3;
     // Keep the heading with the first lines under it.
     ensureRoom(18);
-    setType("bold", 11, ACCENT);
+    setType("bold", 11, PDF_ACCENT);
     doc.text(title.toUpperCase(), MARGIN, y);
     y += 1.8;
-    doc.setDrawColor(...hexToRgb(RULE));
+    doc.setDrawColor(...hexToRgb(PDF_BRAND));
     doc.setLineWidth(0.3);
     doc.line(MARGIN, y, RIGHT_EDGE, y);
     y += 5.2;
@@ -227,7 +226,7 @@ export async function generateResumePDF(
 
   const writeHeader = () => {
     y += 5;
-    setType("bold", 22, ACCENT);
+    setType("bold", 22, PDF_ACCENT);
     doc.text(NAME, MARGIN, y);
     y += 6.5;
 
