@@ -24,17 +24,22 @@ const BULLET_INDENT = 4;
 const NAME = "Mohammad Al-Ahdal";
 const HEADLINE = "Software Developer";
 
-const contactLinks = [
+const LOCATION = "Calgary, AB";
+
+/** Contact details in the header. The location is plain text; the rest link. */
+const contactItems: { label: string; url?: string }[] = [
+  { label: LOCATION },
   { label: "hello@hackr.sh", url: "mailto:hello@hackr.sh" },
   {
     label: "linkedin.com/in/mohammadalahdal",
-    url: "https://linkedin.com/in/mohammadalahdal",
+    url: "https://www.linkedin.com/in/mohammadalahdal",
   },
   { label: "github.com/hackrdotsh", url: "https://github.com/hackrdotsh" },
   { label: "hackr.sh", url: "https://hackr.sh" },
 ];
 
 const CONTACT_SEPARATOR = "  |  ";
+const DETAIL_SEPARATOR = " | ";
 
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -52,6 +57,12 @@ function toBase64(buffer: ArrayBuffer) {
     binary += String.fromCharCode(byte);
   }
   return btoa(binary);
+}
+
+/** Writes a free-text range such as "2016-2020" the way job dates are
+    written, so every date on the page has one format. */
+function formatRange(range: string) {
+  return range.replace(/\s*[-\u2013\u2014]\s*/g, " - ");
 }
 
 function formatYears(years: ResumeData["experiences"][number]["years"]) {
@@ -152,10 +163,14 @@ export async function generateResumePDF(data: ResumeData): Promise<jsPDF> {
 
     setType("normal", 9.5, MUTED);
     let x = MARGIN;
-    contactLinks.forEach((link, index) => {
-      doc.textWithLink(link.label, x, y, { url: link.url });
-      x += doc.getTextWidth(link.label);
-      if (index < contactLinks.length - 1) {
+    contactItems.forEach((item, index) => {
+      if (item.url) {
+        doc.textWithLink(item.label, x, y, { url: item.url });
+      } else {
+        doc.text(item.label, x, y);
+      }
+      x += doc.getTextWidth(item.label);
+      if (index < contactItems.length - 1) {
         doc.text(CONTACT_SEPARATOR, x, y);
         x += doc.getTextWidth(CONTACT_SEPARATOR);
       }
@@ -195,15 +210,17 @@ export async function generateResumePDF(data: ResumeData): Promise<jsPDF> {
 
     setType("bold", 10.5, TEXT);
     doc.text(experience.title, MARGIN, y);
-    setType("normal", BODY_SIZE, MUTED);
-    doc.text(formatYears(experience.years), RIGHT_EDGE, y, { align: "right" });
     y += LINE_HEIGHT;
 
-    const company = experience.address
-      ? `${experience.company}, ${experience.address}`
-      : experience.company;
+    // Dates share the company line. Right-aligning them on the title line
+    // reads as a second column to layout checks.
+    const details = [
+      experience.company,
+      experience.address,
+      formatYears(experience.years),
+    ].filter(Boolean);
     setType("normal", BODY_SIZE, MUTED);
-    doc.text(company, MARGIN, y);
+    doc.text(details.join(DETAIL_SEPARATOR), MARGIN, y);
     y += LINE_HEIGHT + 0.6;
 
     if (typeof experience.description === "string") {
@@ -234,14 +251,15 @@ export async function generateResumePDF(data: ResumeData): Promise<jsPDF> {
   const writeEducation = (education: NonNullable<ResumeData["education"]>) => {
     setType("bold", 10.5, TEXT);
     doc.text(education.degreeName, MARGIN, y);
-    setType("normal", BODY_SIZE, MUTED);
-    doc.text(education.progression, RIGHT_EDGE, y, { align: "right" });
     y += LINE_HEIGHT;
 
-    const school = education.gpa
-      ? `${education.universityName}, GPA ${education.gpa}`
-      : education.universityName;
-    doc.text(school, MARGIN, y);
+    const details = [
+      education.universityName,
+      formatRange(education.progression),
+      education.gpa ? `GPA ${education.gpa}` : "",
+    ].filter(Boolean);
+    setType("normal", BODY_SIZE, MUTED);
+    doc.text(details.join(DETAIL_SEPARATOR), MARGIN, y);
     y += LINE_HEIGHT;
   };
 
