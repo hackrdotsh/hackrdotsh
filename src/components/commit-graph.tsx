@@ -107,116 +107,120 @@ export function CommitGraph() {
   return (
     <div ref={ref} className="absolute inset-0 overflow-hidden">
       {cells.length > 0 && size.w > 0 && size.h > 0 && (
-        <svg
-          width={gridW}
-          height={size.h}
-          viewBox={`0 0 ${gridW} ${size.h}`}
-          shapeRendering="crispEdges"
-          aria-hidden="true"
-          className="block text-accent"
-          style={{ transform: `translateX(${offsetX}px)` }}
-          onMouseMove={(e) => {
-            const t = e.target;
-            if (!(t instanceof SVGRectElement)) {
-              setHoverIdx(null);
-              return;
-            }
-            const idx = Number(t.getAttribute("data-i"));
-            setHoverIdx(cells[idx]?.day ? idx : null);
-          }}
-          onMouseLeave={() => setHoverIdx(null)}
-        >
-          <style>{`
-            .cg-cell {
-              transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
-            }
-            .cg-cell.flipped {
-              transform: scaleY(-1);
-            }
-            .cg-count {
-              opacity: 0;
-              transition: opacity 0.1s linear;
-              pointer-events: none;
-            }
-            .cg-cell.flipped .cg-count {
-              opacity: 1;
-              transition: opacity 0.12s linear 0.23s;
-            }
-          `}</style>
-          {cells.map((c, i) => {
-            const base =
-              !c.day || c.day.level === 0
-                ? LEVEL_OPACITY[0]
-                : LEVEL_OPACITY[c.day.level];
-            const flipped = i === hoverIdx && !!c.day;
-            const cx = c.x + cell / 2;
-            const cy = c.y + cell / 2;
-            return (
-              <g
-                key={c.day ? c.day.date : `pad-${c.x}`}
-                className={flipped ? "cg-cell flipped" : "cg-cell"}
-                style={{ transformOrigin: `${cx}px ${cy}px` }}
-              >
-                <rect
-                  data-i={i}
-                  x={c.x}
-                  y={c.y}
-                  width={cell}
-                  height={cell}
-                  fill="currentColor"
-                  opacity={
-                    hoverIdx !== null && hoverIdx !== i ? base * 0.5 : base
-                  }
-                  className={
-                    !c.day || c.day.level === 0
-                      ? "text-foreground transition-opacity duration-150"
-                      : "text-accent transition-opacity duration-150"
-                  }
-                />
-                {c.day && (
-                  <text
-                    className="cg-count font-mono font-bold tabular-nums"
-                    x={cx}
-                    y={cy}
-                    transform={`translate(${cx} ${cy}) scale(1 -1) translate(${-cx} ${-cy})`}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    style={{
-                      fontSize: Math.max(6, Math.floor(cell * 0.48)),
-                      fill:
-                        c.day.level >= 3
-                          ? "var(--accent-foreground)"
-                          : "var(--foreground)",
-                    }}
-                  >
-                    {c.day.count}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-          {/*
-            Static hit targets, one per day cell, layered above the flipping
-            groups so hover never depends on the animated geometry — otherwise
-            a slow/vertical approach loses hover mid-flip as the square
-            squashes away from under the cursor.
-          */}
-          {cells.map(
-            (c, i) =>
-              c.day && (
-                <rect
-                  key={`hit-${c.day.date}`}
-                  data-i={i}
-                  x={c.x}
-                  y={c.y}
-                  width={cell}
-                  height={cell}
-                  fill="transparent"
-                  stroke="none"
-                />
-              ),
-          )}
-        </svg>
+        // The graph arrives after its data loads, so it dithers in like the
+        // rest of the page. The wrapper is the element that gets masked.
+        <div data-dither-in className="absolute inset-0">
+          <svg
+            width={gridW}
+            height={size.h}
+            viewBox={`0 0 ${gridW} ${size.h}`}
+            shapeRendering="crispEdges"
+            aria-hidden="true"
+            className="block text-accent"
+            style={{ transform: `translateX(${offsetX}px)` }}
+            onMouseMove={(e) => {
+              const t = e.target;
+              if (!(t instanceof SVGRectElement)) {
+                setHoverIdx(null);
+                return;
+              }
+              const idx = Number(t.getAttribute("data-i"));
+              setHoverIdx(cells[idx]?.day ? idx : null);
+            }}
+            onMouseLeave={() => setHoverIdx(null)}
+          >
+            <style>{`
+              .cg-cell {
+                transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+              }
+              .cg-cell.flipped {
+                transform: scaleY(-1);
+              }
+              .cg-count {
+                opacity: 0;
+                transition: opacity 0.1s linear;
+                pointer-events: none;
+              }
+              .cg-cell.flipped .cg-count {
+                opacity: 1;
+                transition: opacity 0.12s linear 0.23s;
+              }
+            `}</style>
+            {cells.map((c, i) => {
+              const base =
+                !c.day || c.day.level === 0
+                  ? LEVEL_OPACITY[0]
+                  : LEVEL_OPACITY[c.day.level];
+              const flipped = i === hoverIdx && !!c.day;
+              const cx = c.x + cell / 2;
+              const cy = c.y + cell / 2;
+              return (
+                <g
+                  key={c.day ? c.day.date : `pad-${c.x}`}
+                  className={flipped ? "cg-cell flipped" : "cg-cell"}
+                  style={{ transformOrigin: `${cx}px ${cy}px` }}
+                >
+                  <rect
+                    data-i={i}
+                    x={c.x}
+                    y={c.y}
+                    width={cell}
+                    height={cell}
+                    fill="currentColor"
+                    opacity={
+                      hoverIdx !== null && hoverIdx !== i ? base * 0.5 : base
+                    }
+                    className={
+                      !c.day || c.day.level === 0
+                        ? "text-foreground transition-opacity duration-150"
+                        : "text-accent transition-opacity duration-150"
+                    }
+                  />
+                  {c.day && (
+                    <text
+                      className="cg-count font-mono font-bold tabular-nums"
+                      x={cx}
+                      y={cy}
+                      transform={`translate(${cx} ${cy}) scale(1 -1) translate(${-cx} ${-cy})`}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      style={{
+                        fontSize: Math.max(6, Math.floor(cell * 0.48)),
+                        fill:
+                          c.day.level >= 3
+                            ? "var(--accent-foreground)"
+                            : "var(--foreground)",
+                      }}
+                    >
+                      {c.day.count}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+            {/*
+              Static hit targets, one per day cell, layered above the flipping
+              groups so hover never depends on the animated geometry — otherwise
+              a slow/vertical approach loses hover mid-flip as the square
+              squashes away from under the cursor.
+            */}
+            {cells.map(
+              (c, i) =>
+                c.day && (
+                  <rect
+                    key={`hit-${c.day.date}`}
+                    data-i={i}
+                    x={c.x}
+                    y={c.y}
+                    width={cell}
+                    height={cell}
+                    fill="transparent"
+                    stroke="none"
+                  />
+                ),
+            )}
+          </svg>
+        </div>
       )}
     </div>
   );
