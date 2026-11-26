@@ -25,6 +25,17 @@ const navLinks = [
 
 const adminLink = { href: "/admin/resumes", label: "admin" };
 
+/** True when a key press is going into a field, an editor or a dialog. */
+function isTyping(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target.closest(
+      "input, textarea, select, [role='dialog'], [role='listbox']",
+    ) !== null
+  );
+}
+
 function isActive(pathname: string, href: string) {
   if (href === adminLink.href) return pathname.startsWith("/admin");
   return pathname === href;
@@ -115,9 +126,29 @@ export function Navbar() {
   );
 
   // The owner reaches the admin area from here.
-  const links = isOwnerEmail(session?.user?.email)
-    ? [...navLinks, adminLink]
-    : navLinks;
+  const isOwner = isOwnerEmail(session?.user?.email);
+  const links = isOwner ? [...navLinks, adminLink] : navLinks;
+
+  // Number keys jump to the numbered items: 1 is the first, and the admin
+  // item's number only works while it is shown, which is when signed in as
+  // the owner.
+  useEffect(() => {
+    const shortcuts = isOwner ? [...navLinks, adminLink] : navLinks;
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isTyping(event.target)) return;
+
+      const link = shortcuts[Number(event.key) - 1];
+      if (!link) return;
+      event.preventDefault();
+      router.push(link.href);
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOwner, router]);
 
   const authButton =
     !isPending && session ? (
@@ -169,6 +200,7 @@ export function Navbar() {
                   variant="ghost"
                   size="sm"
                   aria-current={active ? "page" : undefined}
+                  aria-keyshortcuts={String(i + 1)}
                   className={cn(
                     "group font-mono",
                     active
